@@ -2,12 +2,14 @@ import jQuery from 'jquery';
 import sinon from 'sinon';
 import ConfigStore from 'app/stores/configStore';
 import MockDate from 'mockdate';
+import PropTypes from 'prop-types';
 
 import Enzyme from 'enzyme';
 import Adapter from 'enzyme-adapter-react-15';
 
 jest.mock('app/translations');
 jest.mock('app/api');
+jest.mock('scroll-to-element', () => {});
 
 const constantDate = new Date('2017-10-17T04:41:20'); //National Pasta Day
 MockDate.set(constantDate);
@@ -38,6 +40,17 @@ window.TestStubs = {
     pathame: '/mock-pathname/',
   }),
 
+  routerContext: () => ({
+    context: {
+      location: TestStubs.location(),
+      router: TestStubs.router(),
+    },
+    childContextTypes: {
+      router: PropTypes.object,
+      location: PropTypes.object,
+    },
+  }),
+
   ApiKey: params => {
     return {
       allowed_origins: '',
@@ -66,6 +79,26 @@ window.TestStubs = {
       pending_links_count: 0,
       content: '',
     };
+  },
+
+  AccountEmails: () => {
+    return [
+      {
+        email: 'primary@example.com',
+        isPrimary: true,
+        isVerified: true,
+      },
+      {
+        email: 'secondary1@example.com',
+        isPrimary: false,
+        isVerified: true,
+      },
+      {
+        email: 'secondary2@example.com',
+        isPrimary: false,
+        isVerified: false,
+      },
+    ];
   },
 
   Team: params => {
