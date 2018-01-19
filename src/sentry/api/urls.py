@@ -2,6 +2,7 @@ from __future__ import absolute_import, print_function
 
 from django.conf.urls import include, patterns, url
 
+from .endpoints.agent_index import AgentIndexEndpoint
 from .endpoints.api_applications import ApiApplicationsEndpoint
 from .endpoints.api_application_details import ApiApplicationDetailsEndpoint
 from .endpoints.api_authorizations import ApiAuthorizationsEndpoint
@@ -142,6 +143,13 @@ from .endpoints.setup_wizard import SetupWizard
 
 urlpatterns = patterns(
     '',
+
+    # Agent Data
+    url(
+        r'^agents/$',
+        AgentIndexEndpoint.as_view(),
+        name='sentry-api-0-agents-index'
+    ),
 
     # Api Data
     url(

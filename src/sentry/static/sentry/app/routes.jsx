@@ -8,6 +8,7 @@ import AccountLayout from './views/accountLayout';
 
 import AdminBuffer from './views/adminBuffer';
 import AdminLayout from './views/adminLayout';
+import AdminAgents from './views/adminAgents';
 import AdminOrganizations from './views/adminOrganizations';
 import AdminOverview from './views/adminOverview';
 import AdminProjects from './views/adminProjects';
@@ -487,6 +488,7 @@ function routes() {
       <Route path="/manage/" component={errorHandler(AdminLayout)}>
         <IndexRoute component={errorHandler(AdminOverview)} />
         <Route path="buffer/" component={errorHandler(AdminBuffer)} />
+        <Route path="agents/" component={errorHandler(AdminAgents)} />
         <Route path="organizations/" component={errorHandler(AdminOrganizations)} />
         <Route path="projects/" component={errorHandler(AdminProjects)} />
         <Route path="queue/" component={errorHandler(AdminQueue)} />
