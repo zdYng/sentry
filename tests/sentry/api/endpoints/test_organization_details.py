@@ -114,23 +114,6 @@ class OrganizationUpdateTest(APITestCase):
         )
         assert response.status_code == 400, response.content
 
-    def test_setting_rate_limit(self):
-        org = self.create_organization(owner=self.user)
-        self.login_as(user=self.user)
-        url = reverse(
-            'sentry-api-0-organization-details', kwargs={
-                'organization_slug': org.slug,
-            }
-        )
-        response = self.client.put(
-            url, data={
-                'projectRateLimit': '80',
-            }
-        )
-        assert response.status_code == 200, response.content
-        result = OrganizationOption.objects.get_value(org, 'sentry:project-rate-limit')
-        assert result == 80
-
     def test_upload_avatar(self):
         org = self.create_organization(owner=self.user)
         self.login_as(user=self.user)
@@ -197,6 +180,52 @@ class OrganizationUpdateTest(APITestCase):
         assert options.get('sentry:require_scrub_ip_address')
         assert options.get('sentry:sensitive_fields') == ['password']
         assert options.get('sentry:safe_fields') == ['email']
+
+    def test_setting_legacy_rate_limits(self):
+        org = self.create_organization(owner=self.user)
+        self.login_as(user=self.user)
+        url = reverse(
+            'sentry-api-0-organization-details', kwargs={
+                'organization_slug': org.slug,
+            }
+        )
+        response = self.client.put(
+            url,
+            data={
+                'accountRateLimit': 1000,
+            }
+        )
+        assert response.status_code == 400, response.content
+
+        response = self.client.put(
+            url,
+            data={
+                'projectRateLimit': 1000,
+            }
+        )
+        assert response.status_code == 400, response.content
+
+        OrganizationOption.objects.set_value(org, 'sentry:project-rate-limit', 1)
+
+        response = self.client.put(
+            url,
+            data={
+                'projectRateLimit': 100,
+            }
+        )
+        assert response.status_code == 200, response.content
+
+        assert OrganizationOption.objects.get_value(org, 'sentry:project-rate-limit') == 100
+
+        response = self.client.put(
+            url,
+            data={
+                'accountRateLimit': 50,
+            }
+        )
+        assert response.status_code == 200, response.content
+
+        assert OrganizationOption.objects.get_value(org, 'sentry:account-rate-limit') == 50
 
     def test_safe_fields_as_string_regression(self):
         org = self.create_organization(owner=self.user)

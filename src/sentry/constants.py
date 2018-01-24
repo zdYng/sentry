@@ -352,3 +352,5 @@ class ObjectStatus(object):
 
 
 StatsPeriod = namedtuple('StatsPeriod', ('segments', 'interval'))
+
+LEGACY_RATE_LIMIT_OPTIONS = frozenset(('sentry:project-rate-limit', 'sentry:account-rate-limit'))
