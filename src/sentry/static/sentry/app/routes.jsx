@@ -325,6 +325,30 @@ const projectSettingsRoutes = (
       name="Inbound Filters"
       component={errorHandler(ProjectFilters)}
     />
+    <Route
+      key="hooks/"
+      path="hooks/"
+      name="Service Hooks"
+      componentPromise={() =>
+        import(/*webpackChunkName: "ProjectServiceHooks"*/ './views/settings/project/projectServiceHooks')}
+      component={errorHandler(LazyLoad)}
+    />
+    <Route
+      key="hooks/new/"
+      path="hooks/new/"
+      name="Create Service Hook"
+      componentPromise={() =>
+        import(/*webpackChunkName: "ProjectCreateServiceHook"*/ './views/settings/project/projectCreateServiceHook')}
+      component={errorHandler(LazyLoad)}
+    />{' '}
+    <Route
+      key="hooks/:hookId/"
+      path="hooks/:hookId/"
+      name="Service Hook Details"
+      componentPromise={() =>
+        import(/*webpackChunkName: "ProjectServiceHookDetails"*/ './views/settings/project/projectServiceHookDetails')}
+      component={errorHandler(LazyLoad)}
+    />
     <Route path="keys/" name="Client Keys" component={errorHandler(ProjectKeys)} />
     <Route
       path="keys/:keyId/"
