@@ -2,7 +2,6 @@ import _ from 'lodash';
 
 // import/export sub-utils
 import parseLinkHeader from './utils/parseLinkHeader';
-import deviceNameMapper from './utils/deviceNameMapper';
 import Collection from './utils/collection';
 import PendingChangeQueue from './utils/pendingChangeQueue';
 import CursorPoller from './utils/cursorPoller';
@@ -281,7 +280,7 @@ export function sortProjects(projects) {
   return projects.sort(projectDisplayCompare);
 }
 // re-export under utils
-export {parseLinkHeader, deviceNameMapper, Collection, PendingChangeQueue, CursorPoller};
+export {parseLinkHeader, Collection, PendingChangeQueue, CursorPoller};
 
 // backwards compatible default export for use w/ getsentry (exported
 // as a single object w/ function refs for consumption by getsentry)
@@ -306,7 +305,6 @@ export default {
   parseLinkHeader,
 
   // external imports
-  deviceNameMapper,
   objectToArray,
   Collection,
   PendingChangeQueue,

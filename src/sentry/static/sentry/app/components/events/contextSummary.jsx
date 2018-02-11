@@ -2,9 +2,10 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import Avatar from '../../components/avatar';
+import DeviceName from '../../components/deviceName';
 import SentryTypes from '../../proptypes';
 import {t} from '../../locale';
-import {objectIsEmpty, deviceNameMapper} from '../../utils';
+import {objectIsEmpty} from '../../utils';
 
 const generateClassName = function(name) {
   return name
@@ -117,7 +118,9 @@ class DeviceSummary extends React.Component {
     return (
       <div className={`context-item ${className}`}>
         <span className="context-item-icon" />
-        <h3>{deviceNameMapper(data.model)}</h3>
+        <h3>
+          <DeviceName>{data.model}</DeviceName>
+        </h3>
         <p>{data.arch || data.model_id || ''}</p>
       </div>
     );

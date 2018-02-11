@@ -9,7 +9,8 @@ import LoadingError from '../components/loadingError';
 import LoadingIndicator from '../components/loadingIndicator';
 import Pagination from '../components/pagination';
 import TimeSince from '../components/timeSince';
-import {isUrl, percent, deviceNameMapper} from '../utils';
+import DeviceName from '../components/deviceName';
+import {isUrl, percent} from '../utils';
 import {t} from '../locale';
 
 const GroupTagValues = createReactClass({
@@ -112,14 +113,16 @@ const GroupTagValues = createReactClass({
                 query: {query: `${tagKey.key}:"${tagValue.value}"`},
               }}
             >
-              {tagKey.key === 'user'
-                ? [
-                    <Avatar user={tagValue} size={20} className="avatar" />,
-                    <span style={{marginLeft: 10}}>
-                      {this.getUserDisplayName(tagValue)}
-                    </span>,
-                  ]
-                : deviceNameMapper(tagValue.name)}
+              {tagKey.key === 'user' ? (
+                [
+                  <Avatar user={tagValue} size={20} className="avatar" />,
+                  <span style={{marginLeft: 10}}>
+                    {this.getUserDisplayName(tagValue)}
+                  </span>,
+                ]
+              ) : (
+                <DeviceName>{tagValue.name}</DeviceName>
+              )}
             </Link>
             {tagValue.email && (
               <a

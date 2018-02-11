@@ -5,7 +5,8 @@ import {Link} from 'react-router';
 import ApiMixin from '../../mixins/apiMixin';
 import SentryTypes from '../../proptypes';
 import TooltipMixin from '../../mixins/tooltip';
-import {escape, percent, deviceNameMapper} from '../../utils';
+import DeviceName from '../../components/deviceName';
+import {escape, percent} from '../../utils';
 import {t} from '../../locale';
 
 const TagDistributionMeter = createReactClass({
@@ -116,7 +117,7 @@ const TagDistributionMeter = createReactClass({
                 .tag}/`}
               title={
                 '<div class="truncate">' +
-                escape(deviceNameMapper(value.name) || '') +
+                escape(<DeviceName>{value.name || ''}</DeviceName>) +
                 '</div>' +
                 pctLabel +
                 '%'
@@ -124,7 +125,9 @@ const TagDistributionMeter = createReactClass({
             >
               <span className="tag-description">
                 <span className="tag-percentage">{pctLabel}%</span>
-                <span className="tag-label">{deviceNameMapper(value.name)}</span>
+                <span className="tag-label">
+                  <DeviceName>{value.name}</DeviceName>
+                </span>
               </span>
             </Link>
           );

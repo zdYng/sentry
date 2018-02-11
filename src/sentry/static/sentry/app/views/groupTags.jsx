@@ -6,7 +6,8 @@ import Count from '../components/count';
 import GroupState from '../mixins/groupState';
 import LoadingError from '../components/loadingError';
 import LoadingIndicator from '../components/loadingIndicator';
-import {percent, deviceNameMapper} from '../utils';
+import DeviceName from '../components/deviceName';
+import {percent} from '../utils';
 import {t} from '../locale';
 
 const GroupTags = createReactClass({
@@ -81,7 +82,9 @@ const GroupTags = createReactClass({
                 }}
               >
                 <span className="tag-bar-background" style={{width: pct + '%'}} />
-                <span className="tag-bar-label">{deviceNameMapper(tagValue.name)}</span>
+                <span className="tag-bar-label">
+                  <DeviceName>{tagValue.name}</DeviceName>
+                </span>
                 <span className="tag-bar-count">
                   <Count value={tagValue.count} />
                 </span>
