@@ -59,7 +59,7 @@ describe('OrganizationMembersView', function() {
       });
     });
 
-    it('does not have 2fa warning if user has 2fa', function() {
+    it('does not have 2fa warning if user has 2fa', function(done) {
       let wrapper = mount(
         <OrganizationMembersView
           {...defaultProps}
@@ -78,7 +78,11 @@ describe('OrganizationMembersView', function() {
         }
       );
 
-      expect(wrapper).toMatchSnapshot();
+      setTimeout(() => {
+        wrapper.update();
+        expect(wrapper).toMatchSnapshot();
+        done();
+      }, 1);
     });
   });
 
@@ -94,7 +98,7 @@ describe('OrganizationMembersView', function() {
       });
     });
 
-    it('does not have 2fa warning if user has 2fa', function() {
+    it('does not have 2fa warning if user has 2fa', function(done) {
       let wrapper = mount(
         <OrganizationMembersView
           {...defaultProps}
@@ -113,7 +117,11 @@ describe('OrganizationMembersView', function() {
         }
       );
 
-      expect(wrapper).toMatchSnapshot();
+      setTimeout(() => {
+        wrapper.update();
+        expect(wrapper).toMatchSnapshot();
+        done();
+      }, 1);
     });
   });
 });

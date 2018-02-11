@@ -1,7 +1,6 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import $ from 'jquery';
-import MD5 from 'crypto-js/md5';
 import ConfigStore from '../stores/configStore';
 import UserLetterAvatar from '../components/userLetterAvatar';
 
@@ -23,24 +22,41 @@ class Avatar extends React.Component {
   constructor(...args) {
     super(...args);
     this.state = {
+      gravatarUrl: null,
       showBackupAvatar: false,
       loadError: false,
     };
   }
 
+  componentDidMount() {
+    this.buildGravatarUrl();
+  }
+
+  componentWillReceiveProps() {
+    this.buildGravatarUrl();
+  }
+
   buildGravatarUrl = () => {
-    let url = ConfigStore.getConfig().gravatarBaseUrl + '/avatar/';
+    let avatarType = this.getAvatarType();
 
-    url += MD5(this.props.user.email.toLowerCase());
+    if (avatarType !== 'gravatar') return;
 
-    let query = {
-      s: this.props.size || undefined,
-      d: this.props.default || 'blank',
-    };
+    import(/*webpackChunkName: "crypto-js/md5"*/ 'crypto-js/md5').then(MD5 => {
+      let {user} = this.props;
+      let url = ConfigStore.getConfig().gravatarBaseUrl + '/avatar/';
 
-    url += '?' + $.param(query);
+      url += MD5(user.email.toLowerCase());
 
-    return url;
+      let query = {
+        s: this.props.size || undefined,
+        d: this.props.default || 'blank',
+      };
+
+      url += '?' + $.param(query);
+
+      this.setState({gravatarUrl: url});
+      return url;
+    });
   };
 
   buildProfileUrl = () => {
@@ -49,6 +65,20 @@ class Avatar extends React.Component {
       url += '?' + $.param({s: this.props.size});
     }
     return url;
+  };
+
+  getAvatarType = () => {
+    let {user} = this.props;
+    let avatarType = null;
+    if (user.avatar) {
+      avatarType = user.avatar.avatarType;
+    } else {
+      avatarType = user.email && this.props.gravatar ? 'gravatar' : 'letter_avatar';
+    }
+    if (user.options && user.options.avatarType) {
+      avatarType = user.options.avatarType;
+    }
+    return avatarType;
   };
 
   onLoad = () => {
@@ -64,22 +94,19 @@ class Avatar extends React.Component {
       return null;
     }
     let user = this.props.user;
-    let avatarType = null;
-    if (user.avatar) {
-      avatarType = user.avatar.avatarType;
-    } else {
-      avatarType = user.email && this.props.gravatar ? 'gravatar' : 'letter_avatar';
-    }
+    let avatarType = this.getAvatarType();
     let props = {
       title: this.props.title,
       onError: this.onError,
       onLoad: this.onLoad,
     };
-    if (user.options && user.options.avatarType) {
-      avatarType = user.options.avatarType;
-    }
+
     if (avatarType === 'gravatar') {
-      return <img src={this.buildGravatarUrl()} {...props} />;
+      if (!this.state.gravatarUrl) {
+        return null;
+      }
+
+      return <img src={this.state.gravatarUrl} {...props} />;
     } else if (avatarType === 'upload') {
       return <img src={this.buildProfileUrl()} {...props} />;
     } else {
