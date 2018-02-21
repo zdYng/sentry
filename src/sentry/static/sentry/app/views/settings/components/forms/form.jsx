@@ -13,12 +13,15 @@ export default class Form extends React.Component {
     onSubmit: PropTypes.func,
     onSubmitSuccess: PropTypes.func,
     onSubmitError: PropTypes.func,
+    onFieldChange: PropTypes.func,
     submitDisabled: PropTypes.bool,
     submitLabel: PropTypes.string,
     footerClass: PropTypes.string,
+    footerStyle: PropTypes.object,
     extraButton: PropTypes.element,
     initialData: PropTypes.object,
     requireChanges: PropTypes.bool,
+    hideFooter: PropTypes.bool,
     model: PropTypes.object,
     allowUndo: PropTypes.bool,
     saveOnBlur: PropTypes.bool,
@@ -35,6 +38,8 @@ export default class Form extends React.Component {
     requireChanges: false,
     allowUndo: false,
     saveOnBlur: false,
+    onSubmitSuccess: () => {},
+    onSubmitError: () => {},
   };
 
   static childContextTypes = {
@@ -50,6 +55,7 @@ export default class Form extends React.Component {
       apiMethod,
       onSubmitSuccess,
       onSubmitError,
+      onFieldChange,
       initialData,
       model,
       allowUndo,
@@ -59,6 +65,7 @@ export default class Form extends React.Component {
     this.model.setInitialData(initialData);
     this.model.setFormOptions({
       allowUndo,
+      onFieldChange,
       onSubmitSuccess,
       onSubmitError,
       saveOnBlur,
@@ -85,17 +92,21 @@ export default class Form extends React.Component {
       return;
     }
 
-    this.props.onSubmit(this.model.getData(), this.onSubmitSuccess, this.onSubmitError);
+    if (this.props.onSubmit) {
+      this.props.onSubmit(this.model.getData(), this.onSubmitSuccess, this.onSubmitError);
+    } else {
+      this.model.saveForm();
+    }
   };
 
   onSubmitSuccess = data => {
     this.model.submitSuccess(data);
-    this.props.onSubmitSuccess && this.props.onSubmitSuccess(data, this.model);
+    this.props.onSubmitSuccess(data, this.model);
   };
 
   onSubmitError = error => {
     this.model.submitError(error);
-    this.props.onSubmitError && this.props.onSubmitError(error, this.model);
+    this.props.onSubmitError(error, this.model);
   };
 
   render() {
@@ -104,6 +115,7 @@ export default class Form extends React.Component {
       className,
       children,
       footerClass,
+      footerStyle,
       submitDisabled,
       submitLabel,
       cancelLabel,
@@ -111,15 +123,16 @@ export default class Form extends React.Component {
       extraButton,
       requireChanges,
       saveOnBlur,
+      hideFooter,
     } = this.props;
-    let shouldShowFooter = !saveOnBlur;
+    let shouldShowFooter = typeof hideFooter !== 'undefined' ? !hideFooter : !saveOnBlur;
 
     return (
       <form onSubmit={this.onSubmit} className={className}>
         {children}
 
         {shouldShowFooter && (
-          <div className={footerClass} style={{marginTop: 25}}>
+          <div className={footerClass} style={{marginTop: 25, ...footerStyle}}>
             <Observer>
               {() => (
                 <Button

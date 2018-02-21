@@ -3,7 +3,9 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import createReactClass from 'create-react-class';
 import {Link} from 'react-router';
+import Reflux from 'reflux';
 
+import LatestContextStore from '../stores/latestContextStore';
 import EventList from './projectDashboard/eventList';
 import ProjectState from '../mixins/projectState';
 import ProjectChart from './projectDashboard/chart';
@@ -22,7 +24,7 @@ const ProjectDashboard = createReactClass({
     setProjectNavSection: PropTypes.func,
   },
 
-  mixins: [ProjectState],
+  mixins: [ProjectState, Reflux.listenTo(LatestContextStore, 'onLatestContextChange')],
 
   getDefaultProps() {
     return {
@@ -33,12 +35,19 @@ const ProjectDashboard = createReactClass({
   getInitialState() {
     return {
       statsPeriod: this.props.defaultStatsPeriod,
+      activeEnvironment: null,
+      hasEnvironmentsFeature: new Set(this.context.organization.features).has(
+        'environments'
+      ),
       ...this.getQueryStringState(),
     };
   },
 
   componentWillMount() {
     this.props.setProjectNavSection('dashboard');
+
+    // Manually fire onLatestContextChange
+    this.onLatestContextChange(LatestContextStore.getInitialState());
   },
 
   componentWillReceiveProps(nextProps) {
@@ -85,23 +94,47 @@ const ProjectDashboard = createReactClass({
   },
 
   getTrendingIssuesEndpoint(dateSince) {
-    let params = this.props.params;
-    let qs = jQuery.param({
+    let {params} = this.props;
+    let {activeEnvironment} = this.state;
+
+    let qs = {
       sort: 'priority',
       query: 'is:unresolved',
       since: dateSince,
-    });
-    return '/projects/' + params.orgId + '/' + params.projectId + '/issues/?' + qs;
+    };
+
+    if (activeEnvironment) {
+      qs.environment = activeEnvironment.name;
+      qs.query = `${qs.query} environment:${activeEnvironment.name}`;
+    }
+
+    return `/projects/${params.orgId}/${params.projectId}/issues/?${jQuery.param(qs)}`;
   },
 
   getNewIssuesEndpoint(dateSince) {
-    let params = this.props.params;
-    let qs = jQuery.param({
+    let {params} = this.props;
+    let {activeEnvironment} = this.state;
+
+    let qs = {
       sort: 'new',
       query: 'is:unresolved',
       since: dateSince,
-    });
-    return '/projects/' + params.orgId + '/' + params.projectId + '/issues/?' + qs;
+    };
+
+    if (activeEnvironment) {
+      qs.environment = activeEnvironment.name;
+      qs.query = `${qs.query} environment:${activeEnvironment.name}`;
+    }
+
+    return `/projects/${params.orgId}/${params.projectId}/issues/?${jQuery.param(qs)}`;
+  },
+
+  onLatestContextChange(context) {
+    if (this.state.hasEnvironmentsFeature) {
+      this.setState({
+        activeEnvironment: context.environment,
+      });
+    }
   },
 
   render() {

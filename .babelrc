@@ -21,12 +21,16 @@
     [
       "babel-plugin-transform-builtin-extend",
       {
-        "globals": ["Array"]
+        "globals": ["Array", "Error"]
       }
-    ],
-    "idx"
+    ]
   ],
   "env": {
+    "production": {
+      "plugins": [
+        "idx"
+      ]
+    },
     "development": {
       "plugins": [
         ["emotion", {"sourceMap": true, "autoLabel": true}]
@@ -35,7 +39,7 @@
     "test": {
       "presets": ["react", "latest"],
       "plugins": [
-        "emotion",
+        ["emotion", {"autoLabel": true}],
         "transform-decorators-legacy",
         "transform-class-properties",
         "transform-object-rest-spread",
@@ -44,10 +48,9 @@
         [
           "babel-plugin-transform-builtin-extend",
           {
-            "globals": ["Array"]
+            "globals": ["Array", "Error"]
           }
-        ],
-        "idx"
+        ]
       ]
     }
   }

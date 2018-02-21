@@ -434,10 +434,12 @@ CELERY_IMPORTS = (
     'sentry.tasks.process_buffer', 'sentry.tasks.reports', 'sentry.tasks.reprocessing',
     'sentry.tasks.scheduler', 'sentry.tasks.signals', 'sentry.tasks.store', 'sentry.tasks.unmerge',
     'sentry.tasks.symcache_update', 'sentry.tasks.servicehooks',
+    'sentry.tagstore.tasks', 'sentry.tasks.assemble'
 )
 CELERY_QUEUES = [
     Queue('alerts', routing_key='alerts'),
     Queue('auth', routing_key='auth'),
+    Queue('assemble', routing_key='assemble'),
     Queue('commits', routing_key='commits'),
     Queue('cleanup', routing_key='cleanup'),
     Queue('default', routing_key='default'),
@@ -739,6 +741,7 @@ SENTRY_FEATURES = {
     'auth:register': True,
     'organizations:api-keys': False,
     'organizations:create': True,
+    'organizations:repos': True,
     'organizations:sso': True,
     'organizations:sso-saml2': False,
     'organizations:sso-rippling': False,
@@ -748,6 +751,7 @@ SENTRY_FEATURES = {
     'organizations:new-settings': False,
     'organizations:require-2fa': False,
     'organizations:environments': False,
+    'organizations:internal-catchall': False,
     'projects:global-events': False,
     'projects:plugins': True,
     'projects:dsym': False,
@@ -1293,3 +1297,6 @@ DEPRECATED_SDKS = {
 }
 
 SOUTH_TESTS_MIGRATE = os.environ.get('SOUTH_TESTS_MIGRATE', '0') == '1'
+
+TERMS_URL = None
+PRIVACY_URL = None

@@ -161,7 +161,6 @@ else:
 
 def generate_culprit(data, platform=None):
     culprit = ''
-
     try:
         stacktraces = [
             e['stacktrace'] for e in data['sentry.interfaces.Exception']['values']
@@ -510,6 +509,8 @@ class EventManager(object):
         else:
             transaction_name = culprit
 
+        culprit = force_text(culprit)
+
         recorded_timestamp = data.pop('timestamp')
         date = datetime.fromtimestamp(recorded_timestamp)
         date = date.replace(tzinfo=timezone.utc)
@@ -745,6 +746,9 @@ class EventManager(object):
         group_environment, is_new_group_environment = GroupEnvironment.get_or_create(
             group_id=group.id,
             environment_id=environment.id,
+            defaults={
+                'first_release_id': release.id if release else None,
+            },
         )
 
         if release:
@@ -804,7 +808,10 @@ class EventManager(object):
         UserReport.objects.filter(
             project=project,
             event_id=event_id,
-        ).update(group=group)
+        ).update(
+            group=group,
+            environment=environment,
+        )
 
         # save the event unless its been sampled
         if not is_sample:

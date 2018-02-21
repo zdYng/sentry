@@ -14,6 +14,10 @@ export default function getConfiguration({project}) {
           title: t('General'),
         },
         {
+          path: `${pathPrefix}/teams/`,
+          title: t('Teams'),
+        },
+        {
           path: `${pathPrefix}/alerts/`,
           title: t('Alerts'),
         },
@@ -25,6 +29,10 @@ export default function getConfiguration({project}) {
         {
           path: `${pathPrefix}/tags/`,
           title: t('Tags'),
+        },
+        {
+          path: `${pathPrefix}/environments/`,
+          title: t('Environments'),
         },
         {
           path: `${pathPrefix}/issue-tracking/`,

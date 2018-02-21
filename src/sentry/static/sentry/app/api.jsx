@@ -2,7 +2,7 @@ import $ from 'jquery';
 import _ from 'lodash';
 
 import GroupActions from './actions/groupActions';
-import {openSudo} from './actionCreators/sudo';
+import {openSudo} from './actionCreators/modal';
 
 export class Request {
   constructor(xhr) {
@@ -87,6 +87,11 @@ export class Client {
               requestOptions.error(...args);
             });
         },
+        onClose: () => {
+          if (typeof requestOptions.error !== 'function') return;
+          // If modal was closed, then forward the original response
+          requestOptions.error(response);
+        },
       });
       return;
     }
@@ -152,6 +157,7 @@ export class Client {
       this.request(path, {
         ...options,
         success: (data, ...args) => {
+          // This fails if we need jqXhr :(
           resolve(data);
         },
         error: (error, ...args) => {

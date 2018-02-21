@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ApiNewToken render() renders 1`] = `
-<DocumentTitle
-  title="Create API Token"
+<SideEffect(DocumentTitle)
+  title="Create API Token - Sentry"
 >
   <NarryLayout>
     <h3>
@@ -135,5 +135,5 @@ exports[`ApiNewToken render() renders 1`] = `
       />
     </ApiForm>
   </NarryLayout>
-</DocumentTitle>
+</SideEffect(DocumentTitle)>
 `;

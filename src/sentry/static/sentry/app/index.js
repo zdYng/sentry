@@ -12,6 +12,10 @@ import Reflux from 'reflux';
 import * as Router from 'react-router';
 import ReactBootstrapModal from 'react-bootstrap/lib/Modal';
 import JsCookie from 'js-cookie';
+import * as EmotionTheming from 'emotion-theming';
+import * as Emotion from 'emotion';
+import * as ReactEmotion from 'react-emotion';
+import * as GridEmotion from 'grid-emotion';
 
 import './utils/emotion-setup';
 import * as api from './api';
@@ -91,6 +95,11 @@ export default {
   Reflux,
   Router,
   JsCookie,
+  Emotion,
+  EmotionTheming,
+  ReactEmotion,
+  GridEmotion,
+
   SentryRenderApp: () => render(Main),
 
   Sentry: {
@@ -116,8 +125,11 @@ export default {
 
     Alerts: require('./components/alerts').default,
     AlertActions: require('./actions/alertActions').default,
-    // TODO: remove when old personal settings are deprecated
+    AsyncComponent: require('./components/asyncComponent').default,
+    AsyncView: require('./views/asyncView').default,
+    // TODO(billy): remove when old personal settings are deprecated #new-settings
     AvatarSettings: require('./components/avatarSettings').default,
+    Button: require('./components/buttons/button').default,
     mixins: {
       ApiMixin: require('./mixins/apiMixin').default,
       TooltipMixin: require('./mixins/tooltip').default,
@@ -146,21 +158,27 @@ export default {
       .default,
     OrganizationMembersView: require('./views/settings/organization/members/organizationMembersView')
       .default,
+    Panel: require('./views/settings/components/panel').default,
+    PanelHeader: require('./views/settings/components/panelHeader').default,
+    PanelBody: require('./views/settings/components/panelBody').default,
+    PanelItem: require('./views/settings/components/panelItem').default,
     Pagination: require('./components/pagination').default,
     PluginConfig: require('./components/pluginConfig').default,
     ProjectIssueTracking: require('./views/projectIssueTracking').default,
     ProjectSelector: require('./components/projectHeader/projectSelector').default,
-    RuleEditor: require('./views/ruleEditor').default,
+    SettingsPageHeader: require('./views/settings/components/settingsPageHeader').default,
     Sidebar: require('./components/sidebar').default,
     StackedBarChart: require('./components/stackedBarChart').default,
+    TextBlock: require('./views/settings/components/text/textBlock').default,
     TimeSince: require('./components/timeSince').default,
     TodoList: require('./components/onboardingWizard/todos').default,
     U2fEnrollment: require('./components/u2fenrollment').default,
     U2fSign: require('./components/u2fsign').default,
     Badge: require('./components/badge').default,
     Switch: require('./components/switch').default,
-    SudoModal: require('./components/modals/sudoModal').default,
+    GlobalModal: require('./components/globalModal').default,
     SetupWizard: require('./components/setupWizard').default,
+    theme: require('./utils/theme').default,
     utils: {
       errorHandler: require('./utils/errorHandler').default,
       logging: require('./utils/logging'),

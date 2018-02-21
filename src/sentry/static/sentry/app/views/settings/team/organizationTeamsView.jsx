@@ -3,9 +3,10 @@ import React from 'react';
 
 import SentryTypes from '../../../proptypes';
 import {t} from '../../../locale';
-import ExpandedTeamList from './expandedTeamList';
 import AllTeamsList from './allTeamsList';
+import {getOrganizationState} from '../../../mixins/organizationState';
 import ListLink from '../../../components/listLink';
+import Button from '../../../components/buttons/button';
 import recreateRoute from '../../../utils/recreateRoute';
 import SettingsPageHeader from '../components/settingsPageHeader';
 
@@ -13,7 +14,6 @@ class OrganizationTeamsView extends React.Component {
   static propTypes = {
     allTeams: PropTypes.arrayOf(SentryTypes.Team),
     activeTeams: PropTypes.arrayOf(SentryTypes.Team),
-    projectStats: PropTypes.array,
     organization: SentryTypes.Organization,
     access: PropTypes.object,
     features: PropTypes.object,
@@ -26,7 +26,6 @@ class OrganizationTeamsView extends React.Component {
     let {
       allTeams,
       activeTeams,
-      projectStats,
       organization,
       access,
       features,
@@ -37,6 +36,24 @@ class OrganizationTeamsView extends React.Component {
     let org = organization;
 
     if (!organization) return null;
+
+    let canCreateTeams = getOrganizationState(organization)
+      .getAccess()
+      .has('project:admin');
+
+    let action = (
+      <Button
+        priority="primary"
+        size="small"
+        disabled={!canCreateTeams}
+        title={
+          !canCreateTeams ? t('You do not have permission to create teams') : undefined
+        }
+        to={`/organizations/${organization.slug}/teams/new/`}
+      >
+        <span className="icon-plus" /> {t('Create Team')}
+      </Button>
+    );
 
     let teamRoute = routes.find(({path}) => path === 'teams/');
     let urlPrefix = recreateRoute(teamRoute, {routes, params, stepBack: -1});
@@ -52,25 +69,19 @@ class OrganizationTeamsView extends React.Component {
 
     return (
       <div className="team-list">
-        <SettingsPageHeader title={t('Projects & Teams')} tabs={tabs} />
-        {route.allTeams /* should be AllTeamsList */ ? (
-          <AllTeamsList
-            urlPrefix={urlPrefix}
-            organization={org}
-            teamList={allTeams}
-            access={access}
-            openMembership={features.has('open-membership') || access.has('org:write')}
-          />
-        ) : (
-          <ExpandedTeamList
-            urlPrefix={urlPrefix}
-            organization={org}
-            teamList={activeTeams}
-            projectStats={projectStats}
-            hasTeams={allTeams.length !== 0}
-            access={access}
-          />
-        )}
+        <SettingsPageHeader title={t('Teams')} tabs={tabs} action={action} />
+        <AllTeamsList
+          urlPrefix={urlPrefix}
+          organization={org}
+          teamList={route.allTeams ? allTeams : activeTeams}
+          access={access}
+          openMembership={
+            !!(
+              route.allTeams &&
+              (features.has('open-membership') || access.has('org:write'))
+            )
+          }
+        />
       </div>
     );
   }

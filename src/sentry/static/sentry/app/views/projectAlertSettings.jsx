@@ -2,10 +2,15 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import {ApiForm, RangeField, TextField} from '../components/forms';
-import {t, tct} from '../locale';
+import {t} from '../locale';
+import AlertLink from '../components/alertLink';
 import AsyncView from './asyncView';
 import Button from '../components/buttons/button';
 import ListLink from '../components/listLink';
+import Panel from './settings/components/panel';
+import PanelAlert from './settings/components/panelAlert';
+import PanelBody from './settings/components/panelBody';
+import PanelHeader from './settings/components/panelHeader';
 import PluginList from '../components/pluginList';
 import SettingsPageHeader from './settings/components/settingsPageHeader';
 
@@ -20,12 +25,10 @@ class DigestSettings extends React.Component {
   render() {
     let {orgId, projectId, initialData, onSave} = this.props;
     return (
-      <div className="box">
-        <div className="box-header">
-          <h3>{t('Digests')}</h3>
-        </div>
-        <div className="box-content with-padding">
-          <p>
+      <Panel>
+        <PanelHeader>{t('Digests')}</PanelHeader>
+        <PanelBody px={2} pt={2} flex>
+          <PanelAlert type="info" icon="icon-circle-exclamation">
             {t(
               'Sentry will automatically digest alerts sent ' +
                 'by some services to avoid flooding your inbox ' +
@@ -33,7 +36,7 @@ class DigestSettings extends React.Component {
                 'how frequently notifications are delivered, use ' +
                 'the sliders below.'
             )}
-          </p>
+          </PanelAlert>
           <ApiForm
             onSubmitSuccess={onSave}
             apiMethod="PUT"
@@ -68,8 +71,8 @@ class DigestSettings extends React.Component {
               </div>
             </div>
           </ApiForm>
-        </div>
-      </div>
+        </PanelBody>
+      </Panel>
     );
   }
 }
@@ -85,12 +88,10 @@ class GeneralSettings extends React.Component {
   render() {
     let {orgId, projectId, initialData, onSave} = this.props;
     return (
-      <div className="box">
-        <div className="box-header">
-          <h3>{t('Email Settings')}</h3>
-        </div>
+      <Panel>
+        <PanelHeader>{t('Email Settings')}</PanelHeader>
 
-        <div className="box-content with-padding">
+        <PanelBody px={2} pt={2} flex>
           <ApiForm
             onSubmitSuccess={onSave}
             apiMethod="PUT"
@@ -103,12 +104,12 @@ class GeneralSettings extends React.Component {
               label={t('Subject template')}
               required={false}
               help={t(
-                'The email subject to use (excluding the prefix) for individual alerts. Usable variables include: $project, $title, and ${tag:key}, such as ${tag:environment} or ${tag:release}.'
+                'The email subject to use (excluding the prefix) for individual alerts. Usable variables include: $project, $title, $shortID, and ${tag:key}, such as ${tag:environment} or ${tag:release}.'
               )}
             />
           </ApiForm>
-        </div>
-      </div>
+        </PanelBody>
+      </Panel>
     );
   }
 }
@@ -188,7 +189,7 @@ export default class ProjectAlertSettings extends AsyncView {
           title={t('Alerts')}
           action={
             <Button
-              href={`/${orgId}/${projectId}/settings/alerts/rules/new/`}
+              to={`/${orgId}/${projectId}/settings/alerts/rules/new/`}
               priority="primary"
               size="small"
               className="pull-right"
@@ -208,17 +209,12 @@ export default class ProjectAlertSettings extends AsyncView {
             </ul>
           }
         />
-
-        <div className="alert alert-block alert-info">
-          {tct(
-            "These settings cover rule-based alerts. If you're " +
-              'looking to change which notifications you receive ' +
-              'you may do so from your [link:account settings].',
-            {
-              link: <a href="/account/settings/notifications/" />,
-            }
+        {/* todo(ckj): change 'href' to 'to' when new settings is launched */}
+        <AlertLink href={'/account/settings/notifications/'} icon="icon-mail">
+          {t(
+            'Looking to fine-tune your personal notification preferences? Visit your Account Settings'
           )}
-        </div>
+        </AlertLink>
 
         <GeneralSettings
           orgId={orgId}

@@ -10,6 +10,9 @@ import _ from 'lodash';
 
 import ApiMixin from '../mixins/apiMixin';
 import GroupStore from '../stores/groupStore';
+import LatestContextStore from '../stores/latestContextStore';
+import StreamTagStore from '../stores/streamTagStore';
+import EnvironmentStore from '../stores/environmentStore';
 import LoadingError from '../components/loadingError';
 import LoadingIndicator from '../components/loadingIndicator';
 import ProjectState from '../mixins/projectState';
@@ -18,14 +21,16 @@ import StreamGroup from '../components/stream/group';
 import StreamActions from './stream/actions';
 import StreamTagActions from '../actions/streamTagActions';
 import AlertActions from '../actions/alertActions';
-import StreamTagStore from '../stores/streamTagStore';
 import StreamFilters from './stream/filters';
 import StreamSidebar from './stream/sidebar';
 import TimeSince from '../components/timeSince';
 import utils from '../utils';
+import streamUtils from './stream/utils';
 import {logAjaxError} from '../utils/logging';
 import parseLinkHeader from '../utils/parseLinkHeader';
 import {t, tn, tct} from '../locale';
+
+import {setActiveEnvironment} from '../actionCreators/environments';
 
 const MAX_TAGS = 500;
 
@@ -42,6 +47,7 @@ const Stream = createReactClass({
   mixins: [
     Reflux.listenTo(GroupStore, 'onGroupChange'),
     Reflux.listenTo(StreamTagStore, 'onStreamTagChange'),
+    Reflux.listenTo(LatestContextStore, 'onLatestContextChange'),
     ApiMixin,
     ProjectState,
   ],
@@ -62,6 +68,10 @@ const Stream = createReactClass({
       typeof realtimeActiveCookie === 'undefined'
         ? project && !project.firstEvent
         : realtimeActiveCookie === 'true';
+
+    let hasEnvironmentsFeature = new Set(this.getOrganization().features).has(
+      'environments'
+    );
 
     return {
       groupIds: [],
@@ -85,8 +95,12 @@ const Stream = createReactClass({
       tags: StreamTagStore.getAllTags(),
       tagsLoading: true,
       isSidebarVisible: false,
-      isStickyHeader: false,
       processingIssues: null,
+      activeEnvironment: hasEnvironmentsFeature
+        ? LatestContextStore.getInitialState().environment
+        : null,
+      // TODO(lyn): remove when feature is rolled out
+      hasEnvironmentsFeature,
       ...this.getQueryState(),
     };
   },
@@ -102,6 +116,9 @@ const Stream = createReactClass({
     this.fetchSavedSearches();
     this.fetchProcessingIssues();
     this.fetchTags();
+
+    // Make sure it gets called on mount
+    this.onLatestContextChange(LatestContextStore.getInitialState());
   },
 
   componentWillReceiveProps(nextProps) {
@@ -110,15 +127,18 @@ const Stream = createReactClass({
     }
 
     // Do not make new API request if props haven't actually changed
-    if (!_.isEqual(this.props, nextProps)) {
+    // Unless no request has been performed yet
+    if (!_.isEqual(this.props, nextProps) || !this.lastRequest) {
       this.fetchData();
     }
 
     // you cannot apply both a query and a saved search (our routes do not
     // support it), so the searchId takes priority
+    let nextSearchId = nextProps.params.searchId || null;
+
     let searchIdChanged = this.state.isDefaultSearch
-      ? nextProps.params.searchId
-      : nextProps.params.searchId !== this.state.searchId;
+      ? nextSearchId
+      : nextSearchId !== this.state.searchId;
 
     if (searchIdChanged || nextProps.location.search !== this.props.location.search) {
       // TODO(dcramer): handle 404 from popState on searchId
@@ -160,8 +180,8 @@ const Stream = createReactClass({
           savedSearchList: data,
           loading: false,
         };
-        let needsData = this.state.loading;
         let searchId = this.state.searchId;
+        let needsData = this.state.loading;
         if (searchId) {
           let match = data.filter(search => {
             return search.id === searchId;
@@ -183,17 +203,20 @@ const Stream = createReactClass({
           let defaultResults = data.filter(search => {
             return search.isUserDefault;
           });
+
           if (!defaultResults.length) {
             defaultResults = data.filter(search => {
               return search.isDefault;
             });
           }
+
           if (defaultResults.length) {
             newState.searchId = defaultResults[0].id;
             newState.query = defaultResults[0].query;
             newState.isDefaultSearch = true;
           }
         }
+
         return void this.setState(newState, needsData ? this.fetchData : null);
       },
       error: error => {
@@ -346,13 +369,37 @@ const Stream = createReactClass({
 
     let url = this.getGroupListEndpoint();
 
+    // Remove leading and trailing whitespace
+    let query = streamUtils.formatQueryString(this.state.query);
+
+    let activeEnvironment = this.state.activeEnvironment;
+    let activeEnvName = activeEnvironment ? activeEnvironment.name : null;
+
     let requestParams = {
-      query: this.state.query.replace(/^\s+|\s+$/g, ''),
+      query,
       limit: this.props.maxItems,
       sort: this.state.sort,
       statsPeriod: this.state.statsPeriod,
       shortIdLookup: '1',
     };
+
+    // Always keep the global active environment in sync with the queried environment
+    // The global environment wins unless there one is specified by the saved search
+    const queryEnvironment = streamUtils.getQueryEnvironment(query);
+
+    if (queryEnvironment !== null) {
+      // Set the global environment to the one specified by the saved search
+      if (queryEnvironment !== activeEnvName) {
+        let env = EnvironmentStore.getByName(queryEnvironment);
+        setActiveEnvironment(env);
+      }
+      requestParams.environment = queryEnvironment;
+    } else if (activeEnvironment) {
+      // Set the environment of the query to match the global settings
+      query = streamUtils.getQueryStringWithEnvironment(query, activeEnvironment.name);
+      requestParams.query = query;
+      requestParams.environment = activeEnvironment.name;
+    }
 
     let currentQuery = this.props.location.query || {};
     if ('cursor' in currentQuery) {
@@ -393,6 +440,7 @@ const Stream = createReactClass({
         return void this.setState({
           error: false,
           dataLoading: false,
+          query,
           queryCount:
             typeof queryCount !== 'undefined' ? parseInt(queryCount, 10) || 0 : 0,
           queryMaxCount:
@@ -479,6 +527,30 @@ const Stream = createReactClass({
     });
   },
 
+  onLatestContextChange(context) {
+    // Don't do anything unless environment is changing
+    if (context.environment === this.state.activeEnvironment) return;
+
+    if (this.state.hasEnvironmentsFeature) {
+      // Always query the currently active environment selection unless
+      // the environment parameter is part of the saved search
+      let environment = context.environment;
+
+      let query = streamUtils.getQueryStringWithEnvironment(
+        this.state.query,
+        environment === null ? null : environment.name
+      );
+
+      this.setState(
+        {
+          activeEnvironment: environment,
+          query,
+        },
+        this.fetchData
+      );
+    }
+  },
+
   onSearch(query) {
     if (query === this.state.query) {
       // if query is the same, just re-fetch data
@@ -509,12 +581,6 @@ const Stream = createReactClass({
     });
   },
 
-  onStickyStateChange(state) {
-    this.setState({
-      isStickyHeader: state,
-    });
-  },
-
   /**
    * Returns true if all results in the current query are visible/on this page
    */
@@ -541,6 +607,7 @@ const Stream = createReactClass({
     }
 
     let params = this.props.params;
+
     let path = this.state.searchId
       ? `/${params.orgId}/${params.projectId}/searches/${this.state.searchId}/`
       : `/${params.orgId}/${params.projectId}/`;
@@ -642,11 +709,7 @@ const Stream = createReactClass({
         />
       );
     });
-    return (
-      <ul className="group-list" ref="groupList">
-        {groupNodes}
-      </ul>
-    );
+    return <ul className="group-list">{groupNodes}</ul>;
   },
 
   renderAwaitingEvents() {
@@ -769,9 +832,9 @@ const Stream = createReactClass({
               isSearchDisabled={this.state.isSidebarVisible}
               savedSearchList={this.state.savedSearchList}
             />
-            <Sticky onStickyStateChange={this.onStickyStateChange}>
-              <div className="group-header">
-                <div className={this.state.isStickyHeader ? 'container' : null}>
+            <Sticky topOffset={59}>
+              {props => (
+                <div className={classNames('group-header', {sticky: props.isSticky})}>
                   <StreamActions
                     orgId={params.orgId}
                     projectId={params.projectId}
@@ -786,7 +849,7 @@ const Stream = createReactClass({
                     allResultsVisible={this.allResultsVisible()}
                   />
                 </div>
-              </div>
+              )}
             </Sticky>
             {this.renderProcessingIssuesHint()}
             {this.renderStreamBody()}

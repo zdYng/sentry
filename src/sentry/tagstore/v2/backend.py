@@ -40,6 +40,7 @@ class V2TagStorage(TagStorage):
 
     def setup(self):
         self.setup_deletions(
+            tagkey_model=TagKey,
             tagvalue_model=TagValue,
             grouptagkey_model=GroupTagKey,
             grouptagvalue_model=GroupTagValue,
@@ -66,14 +67,26 @@ class V2TagStorage(TagStorage):
         super(V2TagStorage, self).setup_deletions(**kwargs)
 
         from sentry.deletions import default_manager as deletion_manager
-        from sentry.deletions.defaults import BulkModelDeletionTask
-        from sentry.deletions.base import ModelRelation
-        from sentry.models import Project
+        from sentry.deletions.base import ModelRelation, ModelDeletionTask
 
-        deletion_manager.register(TagKey, BulkModelDeletionTask)
-        deletion_manager.add_dependencies(Project, [
-            lambda instance: ModelRelation(TagKey, {'project_id': instance.id}),
-        ])
+        class TagKeyDeletionTask(ModelDeletionTask):
+            def get_child_relations(self, instance):
+                # in bulk
+                model_list = (GroupTagValue, GroupTagKey, TagValue)
+                relations = [
+                    ModelRelation(m, {
+                        'project_id': instance.project_id,
+                        'key_id': instance.id,
+                    }) for m in model_list
+                ]
+                return relations
+
+            def mark_deletion_in_progress(self, instance_list):
+                for instance in instance_list:
+                    if instance.status != TagKeyStatus.DELETION_IN_PROGRESS:
+                        instance.update(status=TagKeyStatus.DELETION_IN_PROGRESS)
+
+        deletion_manager.register(TagKey, TagKeyDeletionTask)
 
     def setup_receivers(self, **kwargs):
         super(V2TagStorage, self).setup_receivers(**kwargs)
@@ -348,19 +361,18 @@ class V2TagStorage(TagStorage):
     def get_group_tag_value(self, project_id, group_id, environment_id, key, value):
         from sentry.tagstore.exceptions import GroupTagValueNotFound
 
-        qs = GroupTagValue.objects.filter(
-            project_id=project_id,
-            group_id=group_id,
-            _key__key=key,
-            _value__value=value,
-        )
+        value = self.get_group_list_tag_value(
+            project_id,
+            [group_id],
+            environment_id,
+            key,
+            value,
+        ).get(group_id)
 
-        qs = self._add_environment_filter(qs, environment_id)
-
-        try:
-            return qs.get()
-        except GroupTagValue.DoesNotExist:
+        if value is None:
             raise GroupTagValueNotFound
+
+        return value
 
     def get_group_tag_values(self, project_id, group_id, environment_id, key):
         qs = GroupTagValue.objects.filter(
@@ -371,6 +383,17 @@ class V2TagStorage(TagStorage):
         qs = self._add_environment_filter(qs, environment_id)
 
         return list(qs)
+
+    def get_group_list_tag_value(self, project_id, group_id_list, environment_id, key, value):
+        qs = GroupTagValue.objects.filter(
+            project_id=project_id,
+            group_id__in=group_id_list,
+            _key__key=key,
+            _value__value=value,
+        )
+
+        qs = self._add_environment_filter(qs, environment_id)
+        return {result.group_id: result for result in qs}
 
     def delete_tag_key(self, project_id, key):
         from sentry.tagstore.tasks import delete_tag_key as delete_tag_key_task

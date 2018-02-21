@@ -1,5 +1,12 @@
 import Reflux from 'reflux';
 
-let AlertActions = Reflux.createActions(['setActive', 'clearActive']);
+let EnvironmentActions = Reflux.createActions([
+  'setActive',
+  'clearActive',
+  'loadData',
+  'loadActiveData',
+  'loadHiddenData',
+  'setDefault',
+]);
 
-export default AlertActions;
+export default EnvironmentActions;

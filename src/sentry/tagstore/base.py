@@ -57,6 +57,7 @@ class TagStorage(Service):
         'get_group_tag_keys',
         'get_group_tag_value',
         'get_group_tag_values',
+        'get_group_list_tag_value',
 
         'delete_tag_key',
         'delete_all_group_tag_keys',
@@ -81,12 +82,12 @@ class TagStorage(Service):
         'get_group_tag_value_qs',
     )
 
-    def setup_deletions(self, tagvalue_model, grouptagkey_model,
+    def setup_deletions(self, tagkey_model, tagvalue_model, grouptagkey_model,
                         grouptagvalue_model, eventtag_model):
         from sentry.deletions import default_manager as deletion_manager
         from sentry.deletions.defaults import BulkModelDeletionTask
         from sentry.deletions.base import ModelRelation, ModelDeletionTask
-        from sentry.models import Group, Event
+        from sentry.models import Group, Event, Project
 
         deletion_manager.register(tagvalue_model, BulkModelDeletionTask)
         deletion_manager.register(grouptagkey_model, BulkModelDeletionTask)
@@ -102,6 +103,13 @@ class TagStorage(Service):
             lambda instance_list: ModelRelation(eventtag_model,
                                                 {'event_id__in': [i.id for i in instance_list]},
                                                 ModelDeletionTask),
+        ])
+
+        deletion_manager.add_dependencies(Project, [
+            lambda instance: ModelRelation(tagkey_model, {'project_id': instance.id}),
+            lambda instance: ModelRelation(tagvalue_model, {'project_id': instance.id}),
+            lambda instance: ModelRelation(grouptagkey_model, {'project_id': instance.id}),
+            lambda instance: ModelRelation(grouptagvalue_model, {'project_id': instance.id}),
         ])
 
     def setup_cleanup(self, tagvalue_model, grouptagvalue_model, eventtag_model):
@@ -273,6 +281,12 @@ class TagStorage(Service):
     def get_group_tag_values(self, project_id, group_id, environment_id, key):
         """
         >>> get_group_tag_values(1, 2, 3, "key1")
+        """
+        raise NotImplementedError
+
+    def get_group_list_tag_value(self, project_id, group_id_list, environment_id, key, value):
+        """
+        >>> get_group_tag_value(1, [1, 2, 3, 4, 5], 3, "key1", "value1")
         """
         raise NotImplementedError
 

@@ -32,9 +32,10 @@ class PostProcessGroupTest(TestCase):
             is_new=True,
             is_regression=False,
             is_sample=False,
+            is_new_group_environment=True,
         )
 
-        mock_processor.assert_called_once_with(event, True, False)
+        mock_processor.assert_called_once_with(event, True, False, True)
         mock_processor.return_value.apply.assert_called_once_with()
 
         mock_callback.assert_called_once_with(event, mock_futures)
@@ -63,6 +64,7 @@ class PostProcessGroupTest(TestCase):
             is_new=True,
             is_regression=False,
             is_sample=False,
+            is_new_group_environment=True,
         )
 
         assert event.group == group2
@@ -82,6 +84,7 @@ class PostProcessGroupTest(TestCase):
             is_new=True,
             is_regression=False,
             is_sample=False,
+            is_new_group_environment=True,
         )
 
         assert not GroupSnooze.objects.filter(
@@ -104,6 +107,7 @@ class PostProcessGroupTest(TestCase):
             is_new=True,
             is_regression=False,
             is_sample=False,
+            is_new_group_environment=True,
         )
 
         assert GroupSnooze.objects.filter(
@@ -127,10 +131,11 @@ class PostProcessGroupTest(TestCase):
                 is_new=False,
                 is_regression=False,
                 is_sample=False,
+                is_new_group_environment=False,
             )
 
         mock_process_service_hook.delay.assert_called_once_with(
-            hook_id=hook.id,
+            servicehook_id=hook.id,
             event=event,
         )
 
@@ -159,10 +164,11 @@ class PostProcessGroupTest(TestCase):
                 is_new=False,
                 is_regression=False,
                 is_sample=False,
+                is_new_group_environment=False,
             )
 
         mock_process_service_hook.delay.assert_called_once_with(
-            hook_id=hook.id,
+            servicehook_id=hook.id,
             event=event,
         )
 
@@ -187,6 +193,7 @@ class PostProcessGroupTest(TestCase):
                 is_new=False,
                 is_regression=False,
                 is_sample=False,
+                is_new_group_environment=False,
             )
 
         assert not mock_process_service_hook.delay.mock_calls
@@ -208,6 +215,7 @@ class PostProcessGroupTest(TestCase):
                 is_new=True,
                 is_regression=False,
                 is_sample=False,
+                is_new_group_environment=False,
             )
 
         assert not mock_process_service_hook.delay.mock_calls

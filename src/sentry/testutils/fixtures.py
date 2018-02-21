@@ -297,7 +297,10 @@ class Fixtures(object):
         if teams is None:
             teams = [self.team]
         # TODO(jess): remove when deprecated
-        kwargs['team'] = teams[0]
+        try:
+            kwargs['team'] = teams[0]
+        except IndexError:
+            pass
 
         if not kwargs.get('name'):
             kwargs['name'] = petname.Generate(2, ' ', letters=10).title()
@@ -329,7 +332,7 @@ class Fixtures(object):
         Activity.objects.create(
             type=Activity.RELEASE,
             project=project,
-            ident=version,
+            ident=Activity.get_version_ident(version),
             user=user,
             data={'version': version},
         )

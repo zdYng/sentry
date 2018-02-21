@@ -6,14 +6,16 @@ import {action} from '@storybook/addon-actions';
 
 import {
   Form as LegacyForm,
-  TextField,
+  TextField as LegacyTextField,
   PasswordField,
   BooleanField,
 } from 'sentry-ui/forms';
 import RadioField from 'settings-ui/forms/radioField';
 import RadioGroup from 'settings-ui/forms/radioGroup';
+import RangeSlider from 'settings-ui/forms/rangeSlider';
 import Form from 'settings-ui/forms/form';
 import FormField from 'settings-ui/forms/formField';
+import TextField from 'settings-ui/forms/textField';
 
 class UndoButton extends React.Component {
   static contextTypes = {
@@ -47,13 +49,13 @@ storiesOf('Forms/Form', module)
     'save on blur and undo',
     withInfo('Saves on blur and has undo')(() => (
       <LegacyForm saveOnBlur allowUndo>
-        <TextField
+        <LegacyTextField
           name="name"
           label="Team Name"
           placeholder="e.g. Operations, Web, Desktop"
           required
         />
-        <TextField name="slug" label="Short name" placeholder="e.g. api-team" />
+        <LegacyTextField name="slug" label="Short name" placeholder="e.g. api-team" />
         <UndoButton />
       </LegacyForm>
     ))
@@ -63,15 +65,19 @@ storiesOf('Forms/Fields', module)
   .add(
     'TextField',
     withInfo('Simple text input')(() => (
-      <LegacyForm saveOnBlur allowUndo>
+      <Form initialData={{context: {location: 'cat'}}}>
         <TextField
-          name="name"
-          label="Team Name"
-          placeholder="e.g. Operations, Web, Desktop"
-          required
+          name="simpletextfield"
+          label="Simple Text Field"
+          placeholder="Simple Text Field"
         />
-        <TextField name="slug" label="Short name" placeholder="e.g. api-team" />
-      </LegacyForm>
+        <TextField
+          name="textfieldwithreturnsubmit"
+          label="Text Field With Return Submit"
+          placeholder="Type here to show the return button"
+          showReturnButton
+        />
+      </Form>
     ))
   )
   .add(
@@ -125,5 +131,21 @@ storiesOf('Forms/Fields', module)
           )}
         </FormField>
       </Form>
+    ))
+  )
+  .add(
+    'RangeSlider',
+    withInfo('Range slider')(() => (
+      <div style={{backgroundColor: '#fff', padding: 20}}>
+        <RangeSlider
+          name="rangeField"
+          label="Toaster Strudle"
+          plural="Toaster Strudles"
+          min={1}
+          max={10}
+          step={1}
+          initialValue={1}
+        />
+      </div>
     ))
   );

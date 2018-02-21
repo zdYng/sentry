@@ -39,7 +39,7 @@ class ProjectTeam(Model):
     # removed when the UI is updated to handle multiple teams
     # per project. This is just to prevent wonky behavior in
     # the mean time.
-    project = FlexibleForeignKey('sentry.Project', unique=True)
+    project = FlexibleForeignKey('sentry.Project')
     team = FlexibleForeignKey('sentry.Team')
 
     class Meta:
@@ -92,7 +92,8 @@ class Project(Model):
     name = models.CharField(max_length=200)
     forced_color = models.CharField(max_length=6, null=True, blank=True)
     organization = FlexibleForeignKey('sentry.Organization')
-    team = FlexibleForeignKey('sentry.Team')
+    # DEPRECATED. use teams instead.
+    team = FlexibleForeignKey('sentry.Team', null=True, on_delete=models.SET_NULL)
     teams = models.ManyToManyField(
         'sentry.Team', related_name='teams', through=ProjectTeam
     )
@@ -123,7 +124,7 @@ class Project(Model):
     class Meta:
         app_label = 'sentry'
         db_table = 'sentry_project'
-        unique_together = (('team', 'slug'), ('organization', 'slug'))
+        unique_together = (('organization', 'slug'),)
 
     __repr__ = sane_repr('team_id', 'name', 'slug')
 
@@ -186,7 +187,7 @@ class Project(Model):
         return self.organization.member_set.filter(
             id__in=OrganizationMember.objects.filter(
                 organizationmemberteam__is_active=True,
-                organizationmemberteam__team=self.team,
+                organizationmemberteam__team__in=self.teams.all(),
             ).values('id'),
             user__is_active=True,
         ).distinct()
@@ -226,8 +227,9 @@ class Project(Model):
         }
 
     def get_full_name(self):
-        if self.team.name not in self.name:
-            return '%s %s' % (self.team.name, self.name)
+        team_name = self.teams.values_list('name', flat=True).first()
+        if team_name is not None and team_name not in self.name:
+            return '%s %s' % (team_name, self.name)
         return self.name
 
     def get_notification_recipients(self, user_option):
@@ -321,6 +323,12 @@ class Project(Model):
             return False
         else:
             return True
+
+    def remove_team(self, team):
+        ProjectTeam.objects.filter(
+            project=self,
+            team=team,
+        ).delete()
 
     def get_security_token(self):
         lock = locks.get(self.get_lock_key(), duration=5)

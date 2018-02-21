@@ -45,7 +45,13 @@
 .group-header {
   // needs fixed height so that stream doesn't "pop" up
   // when stream actions turn "sticky"
-  min-height: 44px;
+  min-height: 0;
+  &.sticky {
+    top: 0;
+    position: fixed;
+    width: 100%;
+    width: 100%;
+  }
 }
 
 .stream-no-bulk-actions {
@@ -1149,6 +1155,7 @@
     visibility: hidden;
     opacity: 0;
     padding-left: 20px;
+    position: absolute;
 
     .stream-tag-filter {
       margin-bottom: 1em;
@@ -1189,6 +1196,7 @@
       opacity: 1;
       height: auto;
       overflow: visible;
+      position: static;
     }
   }
 }

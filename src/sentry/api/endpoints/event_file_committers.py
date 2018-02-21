@@ -9,6 +9,7 @@ from sentry.api.bases.project import ProjectEndpoint
 from sentry.api.serializers import serialize
 from sentry.models import (Release, ReleaseCommit, Commit, CommitFileChange, Event, Group)
 from sentry.api.serializers.models.commit import get_users_for_commits
+from sentry.utils import metrics
 
 from django.db.models import Q
 
@@ -166,8 +167,8 @@ class EventFileCommittersEndpoint(ProjectEndpoint):
             return Response({'detail': 'No Commits found for Release'}, status=404)
 
         frames = self._get_frame_paths(event)
-        frame_limit = 15
-        app_frames = [frame for frame in frames if frame['in_app']][:frame_limit]
+        frame_limit = 25
+        app_frames = [frame for frame in frames if frame['in_app']][-frame_limit:]
 
         # TODO(maxbittker) return this set instead of annotated frames
         path_set = {frame['abs_path'] for frame in app_frames}
@@ -192,6 +193,7 @@ class EventFileCommittersEndpoint(ProjectEndpoint):
         )
 
         committers = self._get_committers(annotated_frames, relevant_commits)
+        metrics.incr('feature.owners.has-committers', instance='hit' if committers else 'miss')
 
         # serialize the commit objects
         serialized_annotated_frames = [

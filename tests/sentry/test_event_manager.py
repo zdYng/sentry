@@ -21,7 +21,7 @@ from sentry.event_manager import (
 )
 from sentry.models import (
     Activity, Environment, Event, Group, GroupEnvironment, GroupHash, GroupRelease, GroupResolution,
-    GroupStatus, GroupTombstone, EventMapping, Release
+    GroupStatus, GroupTombstone, EventMapping, Release, UserReport
 )
 from sentry.signals import event_discarded, event_saved
 from sentry.testutils import assert_mock_called_once_with_partial, TestCase, TransactionTestCase
@@ -39,6 +39,12 @@ class EventManagerTest(TransactionTestCase):
         }
         result.update(kwargs)
         return result
+
+    def make_release_event(self, release_name, project_id):
+        manager = EventManager(self.make_event(release=release_name))
+        manager.normalize()
+        event = manager.save(project_id)
+        return event
 
     def test_key_id_remains_in_data(self):
         manager = EventManager(self.make_event(key_id=12345))
@@ -506,6 +512,16 @@ class EventManagerTest(TransactionTestCase):
         data = manager.normalize()
         assert len(data['culprit']) == MAX_CULPRIT_LENGTH
 
+    def test_handles_non_string_generated_culprit(self):
+        dict_input = {'messages': 'foo'}
+        manager = EventManager(self.make_event(
+            transaction=dict_input,
+        ))
+        manager.normalize()
+        event = manager.save(1)
+        assert event.transaction == dict_input
+        assert event.culprit == dict_input
+
     def test_long_transaction(self):
         manager = EventManager(self.make_event(
             transaction='x' * (MAX_CULPRIT_LENGTH + 1),
@@ -534,14 +550,13 @@ class EventManagerTest(TransactionTestCase):
         assert data['version'] == '6'
 
     def test_first_release(self):
-        manager = EventManager(self.make_event(release='1.0'))
-        event = manager.save(1)
+        project_id = 1
+        event = self.make_release_event('1.0', project_id)
 
         group = event.group
         assert group.first_release.version == '1.0'
 
-        manager = EventManager(self.make_event(release='2.0'))
-        event = manager.save(1)
+        event = self.make_release_event('2.0', project_id)
 
         group = event.group
         assert group.first_release.version == '1.0'
@@ -551,38 +566,36 @@ class EventManagerTest(TransactionTestCase):
         release = Release.objects.create(version='foo-1.0', organization=project.organization)
         release.add_project(project)
 
-        manager = EventManager(self.make_event(release='1.0'))
-        event = manager.save(project.id)
+        event = self.make_release_event('1.0', project.id)
 
         group = event.group
         assert group.first_release.version == 'foo-1.0'
         release_tag = [v for k, v in event.tags if k == 'sentry:release'][0]
         assert release_tag == 'foo-1.0'
 
-        manager = EventManager(self.make_event(release='2.0'))
-        event = manager.save(project.id)
+        event = self.make_release_event('2.0', project.id)
 
         group = event.group
         assert group.first_release.version == 'foo-1.0'
 
     def test_release_project_slug_long(self):
         project = self.create_project(name='foo')
+        partial_version_len = VERSION_LENGTH - 4
         release = Release.objects.create(
-            version='foo-%s' % ('a' * (VERSION_LENGTH - 4), ), organization=project.organization
+            version='foo-%s' % ('a' * partial_version_len, ), organization=project.organization
         )
         release.add_project(project)
 
-        manager = EventManager(self.make_event(release=('a' * (VERSION_LENGTH - 3))))
-        event = manager.save(project.id)
+        event = self.make_release_event('a' * partial_version_len, project.id)
 
         group = event.group
-        assert group.first_release.version == 'foo-%s' % ('a' * (VERSION_LENGTH - 4), )
+        assert group.first_release.version == 'foo-%s' % ('a' * partial_version_len, )
         release_tag = [v for k, v in event.tags if k == 'sentry:release'][0]
-        assert release_tag == 'foo-%s' % ('a' * (VERSION_LENGTH - 4), )
+        assert release_tag == 'foo-%s' % ('a' * partial_version_len, )
 
     def test_group_release_no_env(self):
-        manager = EventManager(self.make_event(release='1.0'))
-        event = manager.save(1)
+        project_id = 1
+        event = self.make_release_event('1.0', project_id)
 
         release = Release.objects.get(version='1.0', projects=event.project_id)
 
@@ -593,8 +606,7 @@ class EventManagerTest(TransactionTestCase):
         ).exists()
 
         # ensure we're not erroring on second creation
-        manager = EventManager(self.make_event(release='1.0'))
-        manager.save(1)
+        event = self.make_release_event('1.0', project_id)
 
     def test_group_release_with_env(self):
         manager = EventManager(
@@ -777,10 +789,13 @@ class EventManagerTest(TransactionTestCase):
 
     @mock.patch('sentry.event_manager.post_process_group.delay')
     def test_group_environment(self, mock_post_process_group_delay):
+        release_version = '1.0'
+
         def save_event():
             manager = EventManager(self.make_event(**{
                 'event_id': uuid.uuid1().hex,  # don't deduplicate
                 'environment': 'beta',
+                'release': release_version,
             }))
             manager.normalize()
             return manager.save(self.project.id)
@@ -788,13 +803,15 @@ class EventManagerTest(TransactionTestCase):
         event = save_event()
 
         # Ensure the `GroupEnvironment` record was created.
-        GroupEnvironment.objects.get(
+        instance = GroupEnvironment.objects.get(
             group_id=event.group_id,
             environment_id=Environment.objects.get(
                 organization_id=self.project.organization_id,
                 name=event.get_tag('environment'),
             ).id,
         )
+
+        assert Release.objects.get(id=instance.first_release_id).version == release_version
 
         # Ensure that the first event in the (group, environment) pair is
         # marked as being part of a new environment.
@@ -826,6 +843,34 @@ class EventManagerTest(TransactionTestCase):
         event = manager.save(self.project.id)
 
         assert event.data.get('fingerprint') == ['{{ default }}']
+
+    def test_user_report_gets_environment(self):
+        project = self.create_project()
+        environment = Environment.objects.create(
+            project_id=project.id,
+            organization_id=project.organization_id,
+            name='production',
+        )
+        environment.add_project(project)
+        event_id = 'a' * 32
+
+        group = self.create_group(project=project)
+        UserReport.objects.create(
+            group=group,
+            project=project,
+            event_id=event_id,
+            name='foo',
+            email='bar@example.com',
+            comments='It Broke!!!',
+        )
+        manager = EventManager(
+            self.make_event(
+                environment=environment.name,
+                event_id=event_id,
+                group=group))
+        manager.normalize()
+        manager.save(project.id)
+        assert UserReport.objects.get(event_id=event_id).environment == environment
 
     def test_default_event_type(self):
         manager = EventManager(self.make_event(message='foo bar'))

@@ -16,10 +16,18 @@ class JsonForm extends React.Component {
     forms: PropTypes.arrayOf(
       PropTypes.shape({
         title: PropTypes.string,
-        fields: PropTypes.arrayOf(FieldFromConfig.propTypes.field),
+        fields: PropTypes.arrayOf(
+          PropTypes.oneOfType([PropTypes.func, FieldFromConfig.propTypes.field])
+        ),
       })
     ).isRequired,
     access: PropTypes.object,
+    additionalFieldProps: PropTypes.object,
+    renderFooter: PropTypes.func,
+  };
+
+  static defaultProps = {
+    additionalFieldProps: {},
   };
 
   static contextTypes = {
@@ -28,7 +36,7 @@ class JsonForm extends React.Component {
 
   constructor(props, ...args) {
     super(props, ...args);
-    this.state = {highlighted: props.location.hash};
+    this.state = {highlighted: this.getLocation(props).hash};
   }
 
   componentDidMount() {
@@ -36,14 +44,19 @@ class JsonForm extends React.Component {
   }
 
   componentWillReceiveProps(nextProps, e) {
-    if (this.props.location.hash !== nextProps.location.hash) {
-      this.scrollToHash(nextProps.location.hash);
-      this.setState({highlighted: nextProps.location.hash});
+    if (this.getLocation(this.props).hash !== this.getLocation(nextProps).hash) {
+      let hash = this.getLocation(nextProps).hash;
+      this.scrollToHash(hash);
+      this.setState({highlighted: hash});
     }
   }
 
+  getLocation = props => {
+    return props.location || this.context.location || {};
+  };
+
   scrollToHash(toHash) {
-    let hash = toHash || this.props.location.hash;
+    let hash = toHash || this.getLocation(this.props).hash;
 
     if (!hash) return;
 
@@ -54,24 +67,36 @@ class JsonForm extends React.Component {
   }
 
   render() {
-    let {forms, access, ...otherProps} = this.props;
+    let {forms, access, additionalFieldProps, renderFooter, ...otherProps} = this.props;
+    let shouldRenderFooter = typeof renderFooter === 'function';
 
     return (
-      <Box>
+      <Box {...otherProps}>
         {forms.map(({title, fields}) => {
           return (
             <Panel key={title} id={title}>
               <PanelHeader>{title}</PanelHeader>
               <PanelBody>
-                {fields.map(field => (
-                  <FieldFromConfig
-                    access={access}
-                    key={field.name}
-                    {...otherProps}
-                    field={field}
-                    highlighted={this.state.highlighted === `#${field.name}`}
-                  />
-                ))}
+                {fields.map(field => {
+                  if (typeof field === 'function') {
+                    return field();
+                  }
+
+                  // eslint-disable-next-line no-unused-vars
+                  let {defaultValue, ...fieldWithoutDefaultValue} = field;
+
+                  return (
+                    <FieldFromConfig
+                      access={access}
+                      key={field.name}
+                      {...otherProps}
+                      {...additionalFieldProps}
+                      field={fieldWithoutDefaultValue}
+                      highlighted={this.state.highlighted === `#${field.name}`}
+                    />
+                  );
+                })}
+                {shouldRenderFooter && renderFooter({title, fields})}
               </PanelBody>
             </Panel>
           );

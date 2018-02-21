@@ -201,15 +201,15 @@ const ProjectEvents = createReactClass({
           <div className="col-sm-5 release-search">
             <SearchBar
               defaultQuery=""
-              placeholder="Search event message"
+              placeholder={t('Search event message')}
               query={this.state.query}
               onSearch={this.onSearch}
             />
           </div>
         </div>
         <div className="alert alert-block alert-info">
-          Psst! This feature is still a work-in-progress. Thanks for being an early
-          adopter!
+          {t(`Psst! This feature is still a work-in-progress. Thanks for being an early
+          adopter!`)}
         </div>
         {this.renderStreamBody()}
         <Pagination pageLinks={this.state.pageLinks} />

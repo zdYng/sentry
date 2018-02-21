@@ -1,8 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ProjectAlertSettings render() renders 1`] = `
-<DocumentTitle
-  title="Project Alert Settings"
+<SideEffect(DocumentTitle)
+  title="Project Alert Settings - Sentry"
 >
   <div>
     <SettingsPageHeading
@@ -10,9 +10,9 @@ exports[`ProjectAlertSettings render() renders 1`] = `
         <Button
           className="pull-right"
           disabled={false}
-          href="/org-slug/project-slug/settings/alerts/rules/new/"
           priority="primary"
           size="small"
+          to="/org-slug/project-slug/settings/alerts/rules/new/"
         >
           <span
             className="icon-plus"
@@ -47,34 +47,12 @@ exports[`ProjectAlertSettings render() renders 1`] = `
       }
       title="Alerts"
     />
-    <div
-      className="alert alert-block alert-info"
+    <AlertLink
+      href="/account/settings/notifications/"
+      icon="icon-mail"
     >
-      <span
-        key="5"
-      >
-        <span
-          key="0"
-        >
-          These settings cover rule-based alerts. If you're looking to change which notifications you receive you may do so from your 
-        </span>
-        <a
-          href="/account/settings/notifications/"
-          key="2"
-        >
-          <span
-            key="1"
-          >
-            account settings
-          </span>
-        </a>
-        <span
-          key="3"
-        >
-          .
-        </span>
-      </span>
-    </div>
+      Looking to fine-tune your personal notification preferences? Visit your Account Settings
+    </AlertLink>
     <GeneralSettings
       initialData={
         Object {
@@ -137,5 +115,5 @@ exports[`ProjectAlertSettings render() renders 1`] = `
       }
     />
   </div>
-</DocumentTitle>
+</SideEffect(DocumentTitle)>
 `;

@@ -5,15 +5,15 @@ import Reflux from 'reflux';
 import DocumentTitle from 'react-document-title';
 
 import ApiMixin from '../../mixins/apiMixin';
-import EnvironmentStore from '../../stores/environmentStore';
+
 import MemberListStore from '../../stores/memberListStore';
 import LoadingError from '../../components/loadingError';
 import LoadingIndicator from '../../components/loadingIndicator';
 import MissingProjectMembership from '../../components/missingProjectMembership';
 import OrganizationState from '../../mixins/organizationState';
 import SentryTypes from '../../proptypes';
-import TeamStore from '../../stores/teamStore';
 import ProjectsStore from '../../stores/projectsStore';
+import {loadEnvironments} from '../../actionCreators/environments';
 import {setActiveProject} from '../../actionCreators/projects';
 import {t} from '../../locale';
 
@@ -24,8 +24,8 @@ const ERROR_TYPES = {
 };
 
 /**
- * Higher-order component that sets `project` and `team` as child context
- * values to be accessed by child elements.
+ * Higher-order component that sets `project` as a child context
+ * value to be accessed by child elements.
  *
  * Additionally delays rendering of children until project XHR has finished
  * and context is populated.
@@ -40,13 +40,11 @@ const ProjectContext = createReactClass({
 
   childContextTypes: {
     project: SentryTypes.Project,
-    team: SentryTypes.Team,
   },
 
   mixins: [
     ApiMixin,
     Reflux.connect(MemberListStore, 'memberList'),
-    Reflux.listenTo(TeamStore, 'onTeamChange'),
     Reflux.listenTo(ProjectsStore, 'onProjectChange'),
     OrganizationState,
   ],
@@ -58,7 +56,6 @@ const ProjectContext = createReactClass({
       errorType: null,
       memberList: [],
       project: null,
-      team: null,
       projectNavSection: null,
     };
   },
@@ -66,7 +63,6 @@ const ProjectContext = createReactClass({
   getChildContext() {
     return {
       project: this.state.project,
-      team: this.state.team,
     };
   },
 
@@ -108,17 +104,8 @@ const ProjectContext = createReactClass({
   },
 
   getTitle() {
-    if (this.state.project) return this.state.team.name + ' / ' + this.state.project.name;
+    if (this.state.project) return this.state.project.name;
     return 'Sentry';
-  },
-
-  onTeamChange(itemIds) {
-    if (!this.state.team) return;
-    if (!itemIds.has(this.state.team.id)) return;
-
-    this.setState({
-      team: {...TeamStore.getById(this.state.team.id)},
-    });
   },
 
   onProjectChange(projectIds) {
@@ -134,30 +121,25 @@ const ProjectContext = createReactClass({
     let {projectId} = this.props;
     let projectSlug = projectId;
     let activeProject = null;
-    let activeTeam = null;
     let org = this.context.organization;
-    org.teams.forEach(team => {
-      team.projects.forEach(project => {
-        if (project.slug == projectSlug) {
-          activeProject = project;
-          activeTeam = team;
-        }
-      });
+    org.projects.forEach(project => {
+      if (project.slug == projectSlug) {
+        activeProject = project;
+      }
     });
-    return [activeTeam, activeProject];
+    return activeProject;
   },
 
   fetchData() {
     let {orgId, projectId} = this.props;
     // we fetch core access/information from the global organization data
-    let [activeTeam, activeProject] = this.identifyProject();
-    let hasAccess = activeTeam && activeTeam.hasAccess;
+    let activeProject = this.identifyProject();
+    let hasAccess = activeProject && activeProject.hasAccess;
 
     this.setState({
       loading: true,
       // we bind project initially, but it'll rebind
       project: activeProject,
-      team: activeTeam,
     });
 
     if (activeProject && hasAccess) {
@@ -167,7 +149,6 @@ const ProjectContext = createReactClass({
           this.setState({
             loading: false,
             project: data,
-            team: data.team,
             error: false,
             errorType: null,
           });
@@ -191,15 +172,13 @@ const ProjectContext = createReactClass({
       });
 
       this.api.request(this.getEnvironmentListEndpoint(), {
-        success: data => {
-          EnvironmentStore.loadInitialData(data);
-        },
+        success: loadEnvironments,
       });
 
       this.setState({
         loading: false,
       });
-    } else if (activeTeam && activeTeam.isMember) {
+    } else if (activeProject && !activeProject.isMember) {
       this.setState({
         loading: false,
         error: true,
@@ -248,8 +227,7 @@ const ProjectContext = createReactClass({
           return (
             <MissingProjectMembership
               organization={this.getOrganization()}
-              team={this.state.team}
-              project={this.state.project}
+              projectId={this.state.project.slug}
             />
           );
         default:

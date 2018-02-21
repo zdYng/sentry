@@ -1,5 +1,6 @@
 from __future__ import absolute_import, print_function
 
+import six
 from time import time
 
 from sentry.http import safe_urlopen
@@ -8,7 +9,7 @@ from sentry.utils import json
 from sentry.utils.http import absolute_uri
 
 
-def get_payload_v0(servicehook, event):
+def get_payload_v0(event):
     from sentry.api.serializers import serialize
 
     group = event.group
@@ -65,14 +66,14 @@ def process_service_hook(servicehook_id, event, **kwargs):
 
     headers = {
         'Content-Type': 'application/json',
-        'X-ServiceHook-Timestamp': int(time()),
+        'X-ServiceHook-Timestamp': six.text_type(int(time())),
         'X-ServiceHook-GUID': servicehook.guid,
         'X-ServiceHook-Signature': servicehook.build_signature(body),
     }
 
     safe_urlopen(
         url=servicehook.url,
-        body=body,
+        data=body,
         headers=headers,
         timeout=5,
         verify_ssl=False,

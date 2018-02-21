@@ -25,6 +25,7 @@ VERSION_RE = re.compile(r'(\d+\.\d+\.\d+)\s+(.*)')
 # Mapping of well-known minidump OS constants to our internal names
 MINIDUMP_OS_TYPES = {
     'Mac OS X': 'macOS',
+    'Windows NT': 'Windows',
 }
 
 AppInfo = namedtuple('AppInfo', ['id', 'version', 'build', 'name'])
@@ -189,7 +190,7 @@ def merge_minidump_event(data, minidump):
         'crashed': False,
         'stacktrace': {
             'frames': [{
-                'instruction_addr': '0x%x' % frame.instruction,
+                'instruction_addr': '0x%x' % frame.return_address,
                 'function': '<unknown>',  # Required by interface
                 'package': frame.module.name if frame.module else None,
             } for frame in reversed(list(thread.frames()))],

@@ -7,12 +7,12 @@ const accountNavigation = [
     name: t('Account'),
     items: [
       {
-        path: `${pathPrefix}/avatar`,
-        title: t('Avatar'),
+        path: `${pathPrefix}/details/`,
+        title: t('Account Details'),
       },
       {
-        path: `${pathPrefix}/appearance/`,
-        title: t('Appearance'),
+        path: `${pathPrefix}/security/`,
+        title: t('Security'),
       },
       {
         path: `${pathPrefix}/notifications/`,
@@ -23,8 +23,33 @@ const accountNavigation = [
         title: t('Emails'),
       },
       {
+        path: `${pathPrefix}/subscriptions/`,
+        title: t('Subscriptions'),
+      },
+      {
         path: `${pathPrefix}/authorizations/`,
         title: t('Authorized Applications'),
+      },
+      {
+        path: `${pathPrefix}/identities/`,
+        title: t('Identities'),
+      },
+      {
+        path: `${pathPrefix}/close-account/`,
+        title: t('Close Account'),
+      },
+    ],
+  },
+  {
+    name: t('API'),
+    items: [
+      {
+        path: `${pathPrefix}/api/applications/`,
+        title: t('Applications'),
+      },
+      {
+        path: `${pathPrefix}/api/auth-tokens/`,
+        title: t('Auth Tokens'),
       },
     ],
   },

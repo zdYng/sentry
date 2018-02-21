@@ -4,39 +4,34 @@ import PropTypes from 'prop-types';
 import React from 'react';
 import styled from 'react-emotion';
 
-import InlineSvg from '../../components/inlineSvg';
-import SettingsActivity from './components/settingsActivity';
+import Alert from '../../components/alert';
 import SettingsBreadcrumb from './components/settingsBreadcrumb';
 import SettingsHeader from './components/settingsHeader';
 import SettingsSearch from './components/settingsSearch';
 
-const StyledIconCircleExclamation = styled(props => (
-  <InlineSvg size="36px" src="icon-circle-exclamation" {...props} />
-))`
-  color: ${p => p.theme.blue};
-  opacity: 0.6;
-`;
-
-let StyledWarning = styled.div`
+let StyledAlert = styled(Alert)`
   margin: 30px 0;
-  background: ${p => p.theme.alert.info.background};
-  border: 1px solid ${p => p.theme.alert.info.border};
-  padding: 15px 20px;
-  border-radius: ${p => p.theme.borderRadius};
-  line-height: ${p => p.theme.text.lineHeightBody};
-  font-size: ${p => p.theme.text.size.small};
-  box-shadow: ${p => p.theme.dropShadowLight};
 `;
 
-// TODO(billy): Temp
+// TODO(billy): Temp #NEW-SETTINGS
 let NewSettingsWarning = ({location = {}}) => {
-  // TODO(billy): Remove this warning when ready
+  // This translates current URLs back to "old" settings URLs
+  // This is so that we can move from new settings back to old settings
   let projectRegex = /^\/settings\/organization\/([^\/]+)\/project\/([^\/]+)\//;
+  let accountRegex = /^\/settings\/account\/([^\/]+)\//;
   let isProject = projectRegex.test(location.pathname);
+  let isAccount = accountRegex.test(location.pathname);
   let oldLocation;
 
   if (isProject) {
     oldLocation = location.pathname.replace(projectRegex, '/$1/$2/settings/');
+  } else if (isAccount) {
+    oldLocation = location.pathname
+      .replace(accountRegex, '/account/settings/$1/')
+      .replace('details/', '')
+      .replace('settings/close-account/', 'remove/')
+      .replace('account/settings/api/', 'api/')
+      .replace('auth-tokens/', '');
   } else {
     oldLocation = location.pathname.replace(
       /^\/settings\/organization\//,
@@ -44,28 +39,19 @@ let NewSettingsWarning = ({location = {}}) => {
     );
   }
 
-  //if (oldLocation === location.pathname) return null;
-
-  // auth should not be react routes
-  let isRouter = !/\/(auth)\//.test(location.pathname);
+  // original org auth view and account settings are django views so we can't use react router navigation
+  let isRouter = !/\/(auth|account)\//.test(location.pathname);
   let linkProps = {
     href: isRouter ? undefined : oldLocation,
     to: isRouter ? oldLocation : undefined,
   };
-  let Component = isRouter ? Link : 'a';
+  let LinkWithFallback = isRouter ? Link : 'a';
   return (
-    <StyledWarning>
-      <Flex align="center">
-        <Box w={32} mr={2}>
-          <StyledIconCircleExclamation />
-        </Box>
-        <Box>
-          These settings are currently in beta. Please report any issues. You can
-          temporarily visit the <Component {...linkProps}>old settings page</Component> if
-          necessary.
-        </Box>
-      </Flex>
-    </StyledWarning>
+    <StyledAlert type="info" icon="icon-circle-exclamation">
+      These settings are currently in beta. Please report any issues. You can temporarily
+      visit the <LinkWithFallback {...linkProps}>old settings page</LinkWithFallback> if
+      necessary.
+    </StyledAlert>
   );
 };
 
@@ -105,7 +91,6 @@ class SettingsLayout extends React.Component {
             <NewSettingsWarning location={this.props.location} />
           </Content>
         </Flex>
-        <SettingsActivity />
       </div>
     );
   }

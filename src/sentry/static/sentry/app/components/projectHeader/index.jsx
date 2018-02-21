@@ -1,12 +1,12 @@
 import PropTypes from 'prop-types';
 import React from 'react';
 import {Link} from 'react-router';
-import classNames from 'classnames';
 
 import ProjectSelector from './projectSelector';
 import BookmarkToggle from '../projects/bookmarkToggle';
 import DropdownLink from '../dropdownLink';
 import MenuItem from '../menuItem';
+import Button from '../buttons/button';
 
 import {t} from '../../locale';
 
@@ -38,14 +38,19 @@ class ProjectHeader extends React.Component {
 
     // TODO: remove when feature is released
     let hasEnvironmentsFeature = new Set(org.features).has('environments');
+    let pagesWithEnvironments = new Set([
+      'stream',
+      'releases',
+      'dashboard',
+      'events',
+      'user-feedback',
+    ]);
+    let pageHasEnvironments = pagesWithEnvironments.has(navSection);
+    let showEnvironmentsToggle = hasEnvironmentsFeature && pageHasEnvironments;
 
     let activeEnvironmentTitle = activeEnvironment
-      ? activeEnvironment.name
+      ? activeEnvironment.displayName
       : allEnvironmentsLabel;
-
-    let projectIconClass = classNames('project-select-bookmark icon icon-star-solid', {
-      active: project.isBookmarked,
-    });
 
     return (
       <div className="sub-header flex flex-container flex-vertically-centered">
@@ -53,9 +58,7 @@ class ProjectHeader extends React.Component {
           <div className="project-header-main">
             <div className="project-select-wrapper">
               <ProjectSelector organization={org} projectId={project.slug} />
-              <BookmarkToggle orgId={org.slug} project={project}>
-                <a className={projectIconClass} />
-              </BookmarkToggle>
+              <BookmarkToggle />
             </div>
 
             <ul className="nav nav-tabs">
@@ -89,9 +92,9 @@ class ProjectHeader extends React.Component {
               )}
             </ul>
           </div>
-          {hasEnvironmentsFeature && (
+          {showEnvironmentsToggle && (
             <div className="project-header-toggle">
-              <label>Environment</label>
+              <label>{t('Environment')}</label>
               <DropdownLink
                 anchorRight={true}
                 title={activeEnvironmentTitle}
@@ -102,9 +105,23 @@ class ProjectHeader extends React.Component {
                 </MenuItem>
                 {environments.map(env => (
                   <MenuItem key={env.id} onClick={() => setActiveEnvironment(env)}>
-                    {env.name}
+                    {env.displayName}
                   </MenuItem>
                 ))}
+                <MenuItem divider={true} />
+                <div style={{textAlign: 'center', padding: '5px 0px'}}>
+                  <Button
+                    to={
+                      new Set(org.features).has('new-settings')
+                        ? `/settings/organization/${org.slug}/project/${project.slug}/environments/`
+                        : `/${org.slug}/${project.slug}/settings/`
+                    }
+                    priority="primary"
+                    size="small"
+                  >
+                    {t('Manage environments')}
+                  </Button>
+                </div>
               </DropdownLink>
             </div>
           )}

@@ -99,11 +99,15 @@ const AllTeamsRow = createReactClass({
   render() {
     let {access, team, urlPrefix, openMembership} = this.props;
     return (
-      <PanelItem align="center">
-        <Box w={1 / 2} p={2}>
-          {team.name}
+      <PanelItem p={0} align="center">
+        <Box flex="1" p={2}>
+          {access.has('team:write') ? (
+            <Link to={`${urlPrefix}teams/${team.slug}/settings/`}>{team.name}</Link>
+          ) : (
+            team.name
+          )}
         </Box>
-        <Box w={1 / 2} p={2} style={{textAlign: 'right'}}>
+        <Box p={2}>
           {this.state.loading ? (
             <a className="btn btn-default btn-sm btn-loading btn-disabled">...</a>
           ) : team.isMember ? (
@@ -120,15 +124,6 @@ const AllTeamsRow = createReactClass({
             <a className="btn btn-default btn-sm" onClick={this.joinTeam}>
               {t('Request Access')}
             </a>
-          )}
-          {access.has('team:write') && (
-            <Link
-              className="btn btn-default btn-sm"
-              to={`${urlPrefix}teams/${team.slug}/settings/`}
-              style={{marginLeft: 5}}
-            >
-              {t('Team Settings')}
-            </Link>
           )}
         </Box>
       </PanelItem>

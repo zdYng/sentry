@@ -1,34 +1,41 @@
 import {css} from 'react-emotion';
 
-const inputStyles = props => css`
-  color: ${props.theme.gray5};
-  display: block;
-  width: 100%;
-  border: 0;
-  border-radius: 2px;
-  padding: 10px;
-  transition: border 0.2s ease;
-  resize: vertical;
+const readOnlyStyle = props =>
+  props.readOnly
+    ? css`
+        cursor: default;
+      `
+    : '';
 
-  &:focus {
-    outline: none;
-    background: #f7f7f9;
-    border-bottom-color: ${p => props.theme.blue};
-  }
+const inputStyles = props => {
+  return css`
+    color: ${props.theme.gray5};
+    display: block;
+    width: 100%;
+    background: #fff;
+    border: 1px solid ${props.theme.borderDark};
+    border-radius: ${props.theme.borderRadius};
+    box-shadow: inset ${props.theme.dropShadowLight};
+    padding: 0.5em;
+    transition: border 0.1s linear;
+    resize: vertical;
 
-  ${p => {
-    if (props.error) {
-      return css`
-    background: #f7f7f9;
-    &:hover, &:focus {
-      background: #f7f7f9};
+    ${readOnlyStyle(props)};
+
+    &:focus {
+      outline: none;
     }
-    `;
+
+    &:hover,
+    &:focus,
+    &:active {
+      border: 1px solid ${props.theme.gray1};
     }
-    return '';
-  }} &::placeholder {
-    color: ${props.theme.gray2};
-  }
-`;
+
+    &::placeholder {
+      color: ${props.theme.gray2};
+    }
+  `;
+};
 
 export {inputStyles};
