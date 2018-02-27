@@ -5,7 +5,7 @@ from rest_framework import permissions
 from sentry.auth.superuser import is_active_superuser
 
 
-class AgentPermission(permissions.BasePermission):
+class RelayPermission(permissions.BasePermission):
     def has_permission(self, request, view):
         # TODO(hazat): request.auth == agent signature, should be agent itself
         if request.auth:
