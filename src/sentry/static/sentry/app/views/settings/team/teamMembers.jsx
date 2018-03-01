@@ -226,19 +226,11 @@ const TeamMembers = createReactClass({
     );
   },
 
-  removeButton(access, member) {
-    return access.has('org:write') ? (
+  removeButton(member) {
+    return (
       <Button size="small" onClick={this.removeMember.bind(this, member)}>
         {t('Remove')}
       </Button>
-    ) : (
-      <Tooltip title={t('You do not have have permission to remove members')}>
-        <span>
-          <Button size="small" disabled={true}>
-            {t('Remove')}
-          </Button>
-        </span>
-      </Tooltip>
     );
   },
 
