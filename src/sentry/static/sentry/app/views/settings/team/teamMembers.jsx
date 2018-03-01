@@ -21,6 +21,20 @@ import {t} from '../../../locale';
 import space from '../../../styles/space';
 import overflowEllipsis from '../../../styles/overflowEllipsis';
 
+const StyledHeaderContainer = styled('div')`
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 1em;
+  padding-right: 1em;
+`;
+
+const StyledMemberContainer = styled('div')`
+  display: flex;
+  justify-content: space-between;
+  padding: 1em;
+`;
+
 const TeamMembers = createReactClass({
   displayName: 'TeamMembers',
   mixins: [ApiMixin, OrganizationState],
@@ -244,7 +258,7 @@ const TeamMembers = createReactClass({
 
     return (
       <Panel>
-        <PanelHeader hasButtons>
+        <PanelHeader hasButtons disablePadding>
           <div>{t('Members')}</div>
           <div style={{textTransform: 'none'}}>{this.renderDropdown(access)}</div>
         </PanelHeader>
