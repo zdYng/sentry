@@ -2,6 +2,7 @@
 
 exports[`TeamMembers render() renders 1`] = `
 <Panel>
+<<<<<<< HEAD
   <PanelHeader
     hasButtons={true}
   >
@@ -81,6 +82,77 @@ exports[`TeamMembers render() renders 1`] = `
   >
     <UserBadge
       avatarSize={36}
+=======
+  <PanelHeader>
+    <PanelHeaderContentContainer>
+      <div>
+        Members
+      </div>
+      <Button
+        className="pull-right"
+        disabled={false}
+        priority="primary"
+        size="small"
+        to="/settings/organization/org-slug/members/new/"
+      >
+        <span
+          className="icon-plus"
+        />
+         
+        Invite Member
+      </Button>
+    </PanelHeaderContentContainer>
+  </PanelHeader>
+  <div
+    key="0"
+    style={
+      Object {
+        "display": "flex",
+        "justifyContent": "space-between",
+      }
+    }
+  >
+    <UserBadge
+      orgId="org-slug"
+      user={
+        Object {
+          "email": "",
+          "flags": Object {
+            "sso:linked": false,
+          },
+          "id": "1",
+          "name": "",
+          "pending": false,
+          "roleName": "",
+          "user": Object {
+            "email": "sentry1@test.com",
+            "has2fa": false,
+            "id": "1",
+            "name": "Sentry 1 Name",
+            "username": "Sentry 1 Username",
+          },
+        }
+      }
+    />
+    <Button
+      disabled={false}
+      onClick={[Function]}
+      size="small"
+    >
+      Remove
+    </Button>
+  </div>
+  <div
+    key="1"
+    style={
+      Object {
+        "display": "flex",
+        "justifyContent": "space-between",
+      }
+    }
+  >
+    <UserBadge
+>>>>>>> remove le table
       orgId="org-slug"
       user={
         Object {
@@ -101,13 +173,17 @@ exports[`TeamMembers render() renders 1`] = `
           },
         }
       }
+<<<<<<< HEAD
       userLink={true}
+=======
+>>>>>>> remove le table
     />
     <Button
       disabled={false}
       onClick={[Function]}
       size="small"
     >
+<<<<<<< HEAD
       <InlineSvg
         size="1.25em"
         src="icon-circle-subtract"
@@ -125,6 +201,21 @@ exports[`TeamMembers render() renders 1`] = `
   >
     <UserBadge
       avatarSize={36}
+=======
+      Remove
+    </Button>
+  </div>
+  <div
+    key="2"
+    style={
+      Object {
+        "display": "flex",
+        "justifyContent": "space-between",
+      }
+    }
+  >
+    <UserBadge
+>>>>>>> remove le table
       orgId="org-slug"
       user={
         Object {
@@ -145,13 +236,17 @@ exports[`TeamMembers render() renders 1`] = `
           },
         }
       }
+<<<<<<< HEAD
       userLink={true}
+=======
+>>>>>>> remove le table
     />
     <Button
       disabled={false}
       onClick={[Function]}
       size="small"
     >
+<<<<<<< HEAD
       <InlineSvg
         size="1.25em"
         src="icon-circle-subtract"
@@ -164,5 +259,10 @@ exports[`TeamMembers render() renders 1`] = `
       Remove
     </Button>
   </StyledMemberContainer>
+=======
+      Remove
+    </Button>
+  </div>
+>>>>>>> remove le table
 </Panel>
 `;

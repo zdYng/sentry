@@ -226,6 +226,22 @@ const TeamMembers = createReactClass({
     );
   },
 
+  removeButton(access, member) {
+    return access.has('org:write') ? (
+      <Button size="small" onClick={this.removeMember.bind(this, member)}>
+        {t('Remove')}
+      </Button>
+    ) : (
+      <Tooltip title={t('You do not have have permission to remove members')}>
+        <span>
+          <Button size="small" disabled={true}>
+            {t('Remove')}
+          </Button>
+        </span>
+      </Tooltip>
+    );
+  },
+
   render() {
     if (this.state.loading) return <LoadingIndicator />;
     else if (this.state.error) return <LoadingError onRetry={this.fetchData} />;
