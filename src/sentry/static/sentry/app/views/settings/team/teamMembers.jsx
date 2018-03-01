@@ -26,13 +26,13 @@ const StyledHeaderContainer = styled('div')`
   align-items: center;
   justify-content: space-between;
   padding-left: 1em;
-  padding-right: 1em;
+  padding-right: 0.66em;
 `;
 
 const StyledMemberContainer = styled('div')`
   display: flex;
   justify-content: space-between;
-  padding: 1em;
+  padding: 0.66em;
 `;
 
 const TeamMembers = createReactClass({
