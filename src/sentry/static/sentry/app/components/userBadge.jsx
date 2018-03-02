@@ -14,7 +14,7 @@ const UserBadge = ({user, orgId, avatarSize, useLink, ...props}) => {
 
   return (
     <StyledUserBadge {...props}>
-      <StyledAvatar user={user} size={avatarSize} />
+      <StyledAvatar user={user} size={avatarSize} className="avatar"/>
       <StyledNameAndEmail>
         <LinkOrText>{user.name || user.email}</LinkOrText>
         <StyledEmail>{user.email}</StyledEmail>
@@ -61,6 +61,12 @@ const StyledAvatar = styled(props => <Avatar {...props} />)`
   height: 2em;
   min-width: 2em;
   min-height: 2em;
+  margin-right: 0.5em;
+`;
+
+const StyledAvatar = styled(props => <Avatar {...props} />)`
+  width: 2em;
+  height: 2em;
   margin-right: 0.5em;
 `;
 
