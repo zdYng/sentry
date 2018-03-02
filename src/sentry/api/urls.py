@@ -2,7 +2,7 @@ from __future__ import absolute_import, print_function
 
 from django.conf.urls import include, patterns, url
 
-from .endpoints.relay_aorta import RelayAortaEndpoint, RelayHeartbeatEndpoint
+from .endpoints.relay_aorta import RelayAortaEndpoint
 from .endpoints.relay_index import RelayIndexEndpoint
 from .endpoints.relay_register import RelayRegisterChallengeEndpoint, \
     RelayRegisterResponseEndpoint
@@ -184,12 +184,6 @@ urlpatterns = patterns(
         r'^relay/aorta/$',
         RelayAortaEndpoint.as_view(),
         name='sentry-api-0-relay-aorta'
-    ),
-
-    url(
-        r'^relay/heartbeat/$',
-        RelayHeartbeatEndpoint.as_view(),
-        name='sentry-api-0-relay-heartbeat'
     ),
 
     # Api Data
