@@ -21,22 +21,6 @@ import {t} from '../../../locale';
 import space from '../../../styles/space';
 import overflowEllipsis from '../../../styles/overflowEllipsis';
 
-const StyledHeaderContainer = styled('div')`
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-left: 1em;
-  padding-right: 1em;
-`;
-
-const StyledMemberContainer = styled('div')`
-  display: flex;
-  justify-content: space-between;
-  padding: 1.25em 0;
-  margin: 0 1em;
-  border-bottom: 1px solid ${p => p.theme.borderLight};
-`;
-
 const TeamMembers = createReactClass({
   displayName: 'TeamMembers',
   mixins: [ApiMixin, OrganizationState],
@@ -324,6 +308,6 @@ const StyledMembersLabel = styled('div')`
 const StyledCreateMemberLink = styled(Link)`
   float: right;
   text-transform: none;
-`;
+`
 
 export default TeamMembers;
