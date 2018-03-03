@@ -22,7 +22,6 @@ const AlertWrapper = styled.div`
   border-radius: ${p => p.theme.borderRadius};
   background: ${p => p.theme.whiteDark};
   border: 1px solid ${p => p.theme.borderDark};
-
   ${p => p.type && getAlertColorStyles(p.theme.alert[p.type])};
 `;
 

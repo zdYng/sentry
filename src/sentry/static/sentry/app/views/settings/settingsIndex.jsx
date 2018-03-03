@@ -48,8 +48,10 @@ const HomePanelBody = styled(PanelBody)`
 
   ul {
     margin: 0;
+
     li {
       line-height: 1.6;
+
       /* Bullet color */
       color: ${p => p.theme.gray1};
     }
@@ -63,6 +65,7 @@ const HomeIcon = styled.div`
   height: 76px;
   border-radius: 76px;
   margin: 0 auto 20px;
+
   > svg {
     margin-top: 14px;
   }

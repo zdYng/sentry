@@ -22,7 +22,7 @@ const SearchInputWrapper = styled.div`
 `;
 
 const SearchInputIcon = styled(props => <InlineSvg src="icon-search" {...props} />)`
-  color: ${p => p.theme.gray2}
+  color: ${p => p.theme.gray2};
   position: absolute;
   left: 10px;
   top: 8px;
@@ -37,7 +37,6 @@ const SearchInput = styled.input`
   border: 1px solid ${p => p.theme.borderDark};
   border-radius: 30px;
   height: 28px;
-
   box-shadow: inset ${p => p.theme.dropShadowLight};
 
   &:focus {
@@ -70,13 +69,13 @@ const SearchItem = styled(({highlighted, ...props}) => <Link {...props} />)`
   color: ${p => p.theme.gray5};
   padding: 16px 16px 14px;
   border-bottom: 1px solid ${p => p.theme.borderLight};
-
   ${p =>
-    p.highlighted &&
-    css`
-      color: ${p.theme.purpleDarkest};
-      background: ${p.theme.offWhite};
-    `} &:first-child {
+    p.highlighted
+      ? css`
+          color: ${p.theme.purpleDarkest};
+          background: ${p.theme.offWhite};
+        `
+      : ''} &:first-child {
     border-radius: 5px 5px 0 0;
   }
 

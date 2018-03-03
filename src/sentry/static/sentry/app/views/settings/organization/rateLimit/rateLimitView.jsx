@@ -1,5 +1,4 @@
 import {Box, Flex} from 'grid-emotion';
-import {withTheme} from 'emotion-theming';
 import PropTypes from 'prop-types';
 import React from 'react';
 import createReactClass from 'create-react-class';
@@ -61,9 +60,9 @@ const StyledTextBlock = styled(TextBlock)`
   margin-bottom: 20px;
 `;
 
-const OldFooter = withTheme(styled.div`
-  bordertop: 1px solid ${p => p.theme.borderLight};
-`);
+const OldFooter = styled.div`
+  border-top: 1px solid ${p => p.theme.borderLight};
+`;
 
 const RateLimitView = createReactClass({
   displayName: 'RateLimitView',
