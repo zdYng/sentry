@@ -1,11 +1,11 @@
 from __future__ import absolute_import
 
 import logging
-import time
 
 from django.db.models import Q
 from six.moves.urllib.parse import parse_qs, urlencode, urlparse, urlunparse
 
+from sentry.utils.dates import to_timestamp
 from sentry.utils import json
 from sentry.utils.assets import get_asset_url
 from sentry.utils.http import absolute_uri
@@ -115,7 +115,7 @@ def build_action_text(identity, action):
     )
 
 
-def build_attachment(group, event=None, identity=None, actions=None):
+def build_attachment(group, event=None, identity=None, actions=None, rules=None):
     # XXX(dcramer): options are limited to 100 choices, even when nested
     status = group.get_status()
     assignees = get_assignees(group)
@@ -186,6 +186,20 @@ def build_attachment(group, event=None, identity=None, actions=None):
         color = ACTIONED_ISSUE_COLOR
         payload_actions = []
 
+    ts = group.last_seen
+
+    if event:
+        event_ts = event.datetime
+        ts = max(ts, event_ts)
+
+    footer = u'{}'.format(group.qualified_short_id)
+
+    if rules:
+        footer += u' via {}'.format(rules[0].label)
+
+        if len(rules) > 1:
+            footer += u' (+{} other)'.format(len(rules) - 1)
+
     return {
         'fallback': u'[{}] {}'.format(group.project.slug, group.title),
         'title': build_attachment_title(group, event),
@@ -194,11 +208,8 @@ def build_attachment(group, event=None, identity=None, actions=None):
         'mrkdwn_in': ['text'],
         'callback_id': json.dumps({'issue': group.id}),
         'footer_icon': logo_url,
-        'footer': u'{} / {}'.format(
-            group.organization.slug,
-            group.project.slug,
-        ),
-        'ts': int(time.mktime(group.last_seen.timetuple())),
+        'footer': footer,
+        'ts': to_timestamp(ts),
         'color': color,
         'actions': payload_actions,
     }

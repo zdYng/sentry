@@ -18,12 +18,13 @@ from django.utils import dateformat
 from django.utils.encoding import force_text
 from django.utils.safestring import mark_safe
 
-from sentry import options
+from sentry import features, options
 from sentry.digests.utilities import get_digest_metadata
 from sentry.plugins import register
 from sentry.plugins.base.structs import Notification
 from sentry.plugins.bases.notify import NotificationPlugin
 from sentry.utils.cache import cache
+from sentry.utils.committers import get_event_file_committers
 from sentry.utils.email import MessageBuilder, group_id_to_email
 from sentry.utils.http import absolute_uri
 from sentry.utils.linksign import generate_signed_link
@@ -140,6 +141,8 @@ class MailPlugin(NotificationPlugin):
         )
 
     def notify(self, notification):
+        from sentry.models import Commit, Release
+
         event = notification.event
         group = event.group
         project = group.project
@@ -160,6 +163,25 @@ class MailPlugin(NotificationPlugin):
 
         enhanced_privacy = org.flags.enhanced_privacy
 
+        # lets identify possibly suspect commits and owners
+        commits = {}
+        if features.has('organizations:suggested-commits', org):
+            try:
+                committers = get_event_file_committers(project, event)
+            except (Commit.DoesNotExist, Release.DoesNotExist):
+                pass
+            except Exception as exc:
+                logging.exception(six.text_type(exc))
+            else:
+                for committer in committers:
+                    for commit in committer['commits']:
+                        if commit['id'] not in commits:
+                            commit_data = commit.copy()
+                            commit_data['shortId'] = commit_data['id'][:7]
+                            commit_data['author'] = committer['author']
+                            commit_data['subject'] = commit_data['message'].split('\n', 1)[0]
+                            commits[commit['id']] = commit_data
+
         context = {
             'project_label': project.get_full_name(),
             'group': group,
@@ -167,6 +189,7 @@ class MailPlugin(NotificationPlugin):
             'link': link,
             'rules': rules,
             'enhanced_privacy': enhanced_privacy,
+            'commits': sorted(commits.values(), key=lambda x: x['score'], reverse=True),
         }
 
         # if the organization has enabled enhanced privacy controls we dont send
@@ -314,7 +337,6 @@ class MailPlugin(NotificationPlugin):
         ))
 
         headers = {
-            'X-Sentry-Team': project.team.slug,
             'X-Sentry-Project': project.slug,
         }
 

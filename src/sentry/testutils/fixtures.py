@@ -56,7 +56,7 @@ DEFAULT_EVENT_DATA = {
                 'context_line':
                 '                        string_max_length=self.string_max_length)',
                 'filename':
-                'raven/base.py',
+                'sentry/models/foo.py',
                 'function':
                 'build_msg',
                 'in_app':
@@ -286,28 +286,15 @@ class Fixtures(object):
     def create_project(self, **kwargs):
         teams = kwargs.pop('teams', None)
 
-        # TOOD(jess): this is just to keep backwards compat
-        # for sentry-plugins and getsentry. Remove once those
-        # are updated
-        team = kwargs.pop('team', None)
-        assert team is None or teams is None
-        if team is not None:
-            teams = [team]
-
         if teams is None:
             teams = [self.team]
-        # TODO(jess): remove when deprecated
-        try:
-            kwargs['team'] = teams[0]
-        except IndexError:
-            pass
 
         if not kwargs.get('name'):
             kwargs['name'] = petname.Generate(2, ' ', letters=10).title()
         if not kwargs.get('slug'):
             kwargs['slug'] = slugify(six.text_type(kwargs['name']))
         if not kwargs.get('organization'):
-            kwargs['organization'] = kwargs['team'].organization
+            kwargs['organization'] = teams[0].organization
 
         project = Project.objects.create(**kwargs)
         for team in teams:
@@ -354,7 +341,7 @@ class Fixtures(object):
     def create_repo(self, project):
         repo = Repository.objects.create(
             organization_id=project.organization_id,
-            name='organization-{}'.format(project.name),
+            name='organization-{}'.format(project.slug),
         )
         return repo
 

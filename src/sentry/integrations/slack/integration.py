@@ -1,14 +1,33 @@
 from __future__ import absolute_import
 
-from sentry.integrations import Integration
+from sentry import http
+from sentry.integrations import Integration, IntegrationMetadata
 from sentry.utils.pipeline import NestedPipelineView
 from sentry.identity.pipeline import IdentityProviderPipeline
 from sentry.utils.http import absolute_uri
+
+DESCRIPTION = """
+Define a relationship between Sentry and your Slack workspace(s).
+
+ * Unfurls Sentry URLs in slack, providing context and actionability on issues
+   directly within your Slack workspace.
+ * Resolve, ignore, and assign issues with minimal context switching.
+ * Configure rule based Slack notifications to automatically be posted into the
+   specified channel.
+"""
+
+metadata = IntegrationMetadata(
+    description=DESCRIPTION.strip(),
+    author='The Sentry Team',
+    issue_url='https://github.com/getsentry/sentry/issues/new?title=Slack%20Integration:%20&labels=Component%3A%20Integrations',
+    source_url='https://github.com/getsentry/sentry/tree/master/src/sentry/integrations/slack'
+)
 
 
 class SlackIntegration(Integration):
     key = 'slack'
     name = 'Slack'
+    metadata = metadata
 
     identity_oauth_scopes = frozenset([
         'bot',
@@ -19,6 +38,11 @@ class SlackIntegration(Integration):
         'links:write',
         'team:read',
     ])
+
+    setup_dialog_config = {
+        'width': 600,
+        'height': 800,
+    }
 
     def get_pipeline_views(self):
         identity_pipeline_config = {
@@ -35,11 +59,24 @@ class SlackIntegration(Integration):
 
         return [identity_pipeline_view]
 
+    def get_team_info(self, access_token):
+        payload = {
+            'token': access_token,
+        }
+
+        session = http.build_session()
+        resp = session.get('https://slack.com/api/team.info', params=payload)
+        resp.raise_for_status()
+        resp = resp.json()
+
+        return resp['team']
+
     def build_integration(self, state):
         data = state['identity']['data']
         assert data['ok']
 
         scopes = sorted(data['scope'].split(','))
+        team_data = self.get_team_info(data['access_token'])
 
         return {
             'name': data['team_name'],
@@ -49,6 +86,8 @@ class SlackIntegration(Integration):
                 'bot_access_token': data['bot']['bot_access_token'],
                 'bot_user_id': data['bot']['bot_user_id'],
                 'scopes': scopes,
+                'icon': team_data['icon']['image_132'],
+                'domain_name': team_data['domain'] + '.slack.com',
             },
             'user_identity': {
                 'type': 'slack',

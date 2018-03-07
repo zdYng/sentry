@@ -12,6 +12,7 @@ import ResolutionBox from '../components/resolutionBox';
 
 const GroupEventDetails = createReactClass({
   displayName: 'GroupEventDetails',
+
   mixins: [ApiMixin, GroupState],
 
   getInitialState() {

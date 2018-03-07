@@ -95,6 +95,7 @@ from .endpoints.project_keys import ProjectKeysEndpoint
 from .endpoints.project_key_details import ProjectKeyDetailsEndpoint
 from .endpoints.project_key_stats import ProjectKeyStatsEndpoint
 from .endpoints.project_member_index import ProjectMemberIndexEndpoint
+from .endpoints.project_ownership import ProjectOwnershipEndpoint
 from .endpoints.project_plugins import ProjectPluginsEndpoint
 from .endpoints.project_plugin_details import ProjectPluginDetailsEndpoint
 from .endpoints.project_release_details import ProjectReleaseDetailsEndpoint
@@ -151,6 +152,7 @@ from .endpoints.user_emails import UserEmailsEndpoint
 from .endpoints.user_organizations import UserOrganizationsEndpoint
 from .endpoints.user_notification_details import UserNotificationDetailsEndpoint
 from .endpoints.user_password import UserPasswordEndpoint
+from .endpoints.user_notification_fine_tuning import UserNotificationFineTuningEndpoint
 from .endpoints.user_social_identities_index import UserSocialIdentitiesIndexEndpoint
 from .endpoints.user_social_identity_details import UserSocialIdentityDetailsEndpoint
 from .endpoints.user_subscriptions import UserSubscriptionsEndpoint
@@ -286,6 +288,11 @@ urlpatterns = patterns(
         r'^users/(?P<user_id>[^\/]+)/password/$',
         UserPasswordEndpoint.as_view(),
         name='sentry-api-0-user-password'
+    ),
+    url(
+        r'^users/(?P<user_id>[^\/]+)/notifications/(?P<notification_type>[^\/]+)/$',
+        UserNotificationFineTuningEndpoint.as_view(),
+        name='sentry-api-0-user-notifications-fine-tuning'
     ),
     url(
         r'^users/(?P<user_id>[^\/]+)/social-identities/$',
@@ -791,6 +798,11 @@ urlpatterns = patterns(
         r'^projects/(?P<organization_slug>[^\/]+)/(?P<project_slug>[^\/]+)/processingissues/discard$',
         ProjectProcessingIssuesDiscardEndpoint.as_view(),
         name='sentry-api-0-project-discard-processing-issues'
+    ),
+    url(
+        r'^projects/(?P<organization_slug>[^\/]+)/(?P<project_slug>[^\/]+)/ownership/$',
+        ProjectOwnershipEndpoint.as_view(),
+        name='sentry-api-0-project-ownership'
     ),
 
     # Load plugin project urls

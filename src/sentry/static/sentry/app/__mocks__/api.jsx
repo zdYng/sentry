@@ -22,13 +22,14 @@ class Client {
   // Returns a jest mock that represents Client.request calls
   static addMockResponse(response) {
     let mock = jest.fn();
-    Client.mockResponses.push([
+    Client.mockResponses.unshift([
       {
         statusCode: 200,
         body: '',
         method: 'GET',
         callCount: 0,
         ...response,
+        headers: response.headers || {},
       },
       mock,
     ]);
@@ -41,6 +42,11 @@ class Client {
       return url === response.url && (options.method || 'GET') === response.method;
     });
   }
+
+  uniqueId() {
+    return '123';
+  }
+
   // In the real client, this clears in-flight responses. It's NOT clearMockResponses. You probably don't want to call this from a test.
   clear() {}
 
@@ -111,7 +117,9 @@ class Client {
           options.success,
           response.body,
           {},
-          {getResponseHeader: () => {}}
+          {
+            getResponseHeader: key => response.headers[key],
+          }
         );
       }
     }

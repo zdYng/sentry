@@ -14,6 +14,7 @@ default_manager.add('organizations:sso-rippling', OrganizationFeature)  # NOQA
 default_manager.add('organizations:onboarding', OrganizationFeature)  # NOQA
 default_manager.add('organizations:repos', OrganizationFeature)  # NOQA
 default_manager.add('organizations:release-commits', OrganizationFeature)  # NOQA
+default_manager.add('organizations:suggested-commits', OrganizationFeature)  # NOQA
 default_manager.add('organizations:group-unmerge', OrganizationFeature)  # NOQA
 default_manager.add('organizations:invite-members', OrganizationFeature)  # NOQA
 default_manager.add('organizations:new-settings', OrganizationFeature)  # NOQA
@@ -33,6 +34,7 @@ default_manager.add('projects:discard-groups', ProjectFeature)  # NOQA
 default_manager.add('projects:custom-inbound-filters', ProjectFeature)  # NOQA
 default_manager.add('projects:minidump', ProjectFeature)  # NOQA
 default_manager.add('organizations:environments', OrganizationFeature)  # NOQA
+default_manager.add('user:assistant')
 
 # expose public api
 add = default_manager.add

@@ -4,6 +4,7 @@ from jsonfield import JSONField
 
 from django.db import models
 from django.utils import timezone
+
 from sentry.db.models import Model, sane_repr
 from sentry.db.models.fields import FlexibleForeignKey
 

@@ -2,7 +2,7 @@ import PropTypes from 'prop-types';
 import React from 'react';
 
 import BooleanField from './booleanField';
-// import RangeField from './rangeField';
+import RangeField from './rangeField';
 // import Select2FieldAutocomplete from './select2FieldAutocomplete';
 import Select2Field from './select2Field';
 // import Select2TextField from './select2TextField';
@@ -23,13 +23,14 @@ export default class FieldFromConfig extends React.Component {
         'radio',
         'choice',
         'select',
+        'range',
       ]),
       required: PropTypes.bool,
       multiline: PropTypes.bool,
       label: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
       placeholder: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-      help: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
-      extraHelp: PropTypes.oneOfType([PropTypes.string, PropTypes.func]),
+      help: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
+      extraHelp: PropTypes.oneOfType([PropTypes.node, PropTypes.func]),
       visible: PropTypes.oneOfType([PropTypes.bool, PropTypes.func]),
       disabled: PropTypes.oneOfType([PropTypes.bool, PropTypes.func]),
       showReturnButton: PropTypes.bool,
@@ -50,8 +51,8 @@ export default class FieldFromConfig extends React.Component {
     switch (field.type) {
       case 'secret':
         return <InputField {...props} type="password" />;
-      // case 'range':
-      // return <RangeField {...props} />;
+      case 'range':
+        return <RangeField {...props} />;
       case 'bool':
       case 'boolean':
         return <BooleanField {...props} />;

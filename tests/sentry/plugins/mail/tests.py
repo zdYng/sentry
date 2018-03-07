@@ -314,6 +314,29 @@ class MailPluginTest(TestCase):
             user=self.create_user('foo@example.com'),
             data={
                 'assignee': six.text_type(self.user.id),
+                'assigneeType': 'user',
+            },
+        )
+
+        with self.tasks():
+            self.plugin.notify_about_activity(activity)
+
+        assert len(mail.outbox) == 1
+
+        msg = mail.outbox[0]
+
+        assert msg.subject == 'Re: [Sentry] BAR-1 - \xe3\x81\x93\xe3\x82\x93\xe3\x81\xab\xe3\x81\xa1\xe3\x81\xaf'
+        assert msg.to == [self.user.email]
+
+    def test_assignment_team(self):
+        activity = Activity.objects.create(
+            project=self.project,
+            group=self.group,
+            type=Activity.ASSIGNED,
+            user=self.create_user('foo@example.com'),
+            data={
+                'assignee': six.text_type(self.project.teams.first().id),
+                'assigneeType': 'team',
             },
         )
 
@@ -340,17 +363,33 @@ class MailPluginTest(TestCase):
             },
         )
 
-        self.project.team.organization.member_set.create(user=user_foo)
+        self.project.teams.first().organization.member_set.create(user=user_foo)
 
         with self.tasks():
             self.plugin.notify_about_activity(activity)
 
-        assert len(mail.outbox) == 1
+        assert len(mail.outbox) >= 1
 
-        msg = mail.outbox[0]
+        msg = mail.outbox[-1]
 
         assert msg.subject == 'Re: [Sentry] BAR-1 - \xe3\x81\x93\xe3\x82\x93\xe3\x81\xab\xe3\x81\xa1\xe3\x81\xaf'
         assert msg.to == [self.user.email]
+
+    def test_notify_with_suspect_commits(self):
+        release = self.create_release(project=self.project, user=self.user)
+        group = self.create_group(project=self.project, first_release=release)
+        event = self.create_event(group=group, tags={'sentry:release': release.version})
+
+        notification = Notification(event=event)
+
+        with self.tasks(), self.options({'system.url-prefix': 'http://example.com'}), self.feature('organizations:suggested-commits'):
+            self.plugin.notify(notification)
+
+        assert len(mail.outbox) >= 1
+
+        msg = mail.outbox[-1]
+
+        assert 'Suspect Commits' in msg.body
 
 
 class MailPluginSignalsTest(TestCase):
@@ -368,7 +407,7 @@ class MailPluginSignalsTest(TestCase):
             email='homer.simpson@example.com'
         )
 
-        self.project.team.organization.member_set.create(user=user_foo)
+        self.project.teams.first().organization.member_set.create(user=user_foo)
 
         with self.tasks():
             self.plugin.handle_signal(

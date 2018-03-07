@@ -6,13 +6,14 @@ import Crumb from './crumb.styled';
 import Link from '../../../components/link';
 import LoadingIndicator from '../../../components/loadingIndicator';
 import SentryTypes from '../../../proptypes';
-import SettingsBackButton from './settingsBackButton';
 import SettingsBreadcrumbDivider from './settingsBreadcrumbDivider';
 import SettingsBreadcrumbDropdown from './settingsBreadcrumbDropdown';
 import recreateRoute from '../../../utils/recreateRoute';
 import replaceRouterParams from '../../../utils/replaceRouterParams';
 import withLatestContext from '../../../utils/withLatestContext';
 import withProjects from '../../../utils/withProjects';
+
+import InlineSvg from '../../../components/inlineSvg';
 
 const Breadcrumbs = styled.div`
   display: flex;
@@ -50,6 +51,39 @@ const StyledLink = styled(Link)`
 
 const ProjectName = styled.div`
   display: flex;
+
+  .loading {
+    width: 26px;
+    height: 24px;
+    margin: 0;
+  }
+`;
+
+const StyledInlineSvg = styled(InlineSvg)`
+  display: block;
+`;
+
+const LogoLink = styled.a`
+  padding-right: 12px;
+  margin-right: 12px;
+  color: ${p => p.theme.gray4};
+  z-index: 1;
+  position: relative;
+
+  &:after {
+    display: block;
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 2px;
+    bottom: 2px;
+    width: 1px;
+    background: ${p => p.theme.borderDark};
+  }
+
+  &:hover {
+    color: ${p => p.theme.gray5};
+  }
 `;
 
 // `organizationDetails` to differeniate from the organization that comes from `OrganizationsStore` which only has
@@ -89,7 +123,7 @@ const ProjectCrumb = withProjects(
                       }
                     )}
                   >
-                    {`${latestProject.name} (${latestProject.slug})`}
+                    {latestProject.slug}
                   </StyledLink>
                 </div>
               )}
@@ -106,7 +140,7 @@ const ProjectCrumb = withProjects(
               active={project.slug === params.projectId}
               key={project.slug}
             >
-              {project.name} ({project.slug})
+              {project.slug}
             </MenuItem>
           ))}
         </SettingsBreadcrumbDropdown>
@@ -179,11 +213,9 @@ class SettingsBreadcrumb extends React.Component {
     let lastRouteIndex = routesWithNames.length - 1;
     return (
       <Breadcrumbs>
-        <Crumb>
-          <SettingsBackButton params={params} />
-          <SettingsBreadcrumbDivider />
-        </Crumb>
-
+        <LogoLink href="/">
+          <StyledInlineSvg src="icon-sentry" size="20px" />
+        </LogoLink>
         {routesWithNames.map((route, i) => {
           let isLast = i === lastRouteIndex;
           let createMenu = MENUS[route.name];
