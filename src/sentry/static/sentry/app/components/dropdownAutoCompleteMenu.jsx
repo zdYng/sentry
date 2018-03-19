@@ -3,6 +3,7 @@ import React from 'react';
 import styled from 'react-emotion';
 import _ from 'lodash';
 import AutoComplete from './autoComplete';
+import EmptyMessage from '../views/settings/components/emptyMessage';
 import Input from '../views/settings/components/forms/controls/input';
 
 class DropdownAutoCompleteMenu extends React.Component {
@@ -111,6 +112,8 @@ class DropdownAutoCompleteMenu extends React.Component {
           isOpen,
           actions,
         }) => {
+          const filteredItems = this.autoCompleteFilter(items, inputValue);
+
           return (
             <AutoCompleteRoot {...getRootProps()}>
               {children({
@@ -136,20 +139,24 @@ class DropdownAutoCompleteMenu extends React.Component {
                   />
                   <div>
                     {menuHeader && <StyledLabel>{menuHeader}</StyledLabel>}
-                    {this.autoCompleteFilter(items, inputValue).map(
-                      (item, index) =>
-                        item.groupLabel ? (
-                          <StyledLabel key={item.value}>{item.label}</StyledLabel>
-                        ) : (
-                          <AutoCompleteItem
-                            key={item.value}
-                            highlightedIndex={highlightedIndex}
-                            index={item.index}
-                            {...getItemProps({item, index: item.index})}
-                          >
-                            {item.label}
-                          </AutoCompleteItem>
-                        )
+                    {filteredItems.length ? (
+                      filteredItems.map(
+                        (item, index) =>
+                          item.groupLabel ? (
+                            <StyledLabel key={item.value}>{item.label}</StyledLabel>
+                          ) : (
+                            <AutoCompleteItem
+                              key={item.value}
+                              highlightedIndex={highlightedIndex}
+                              index={item.index}
+                              {...getItemProps({item, index: item.index})}
+                            >
+                              {item.label}
+                            </AutoCompleteItem>
+                          )
+                      )
+                    ) : (
+                      <EmptyMessage>No matches</EmptyMessage>
                     )}
                     {menuFooter && <StyledLabel>{menuFooter}</StyledLabel>}
                   </div>
