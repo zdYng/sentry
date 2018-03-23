@@ -6,7 +6,6 @@ import styled, {css} from 'react-emotion';
 import classNames from 'classnames';
 
 import InlineSvg from '../inlineSvg';
-import '../../../less/components/button.less';
 
 class Button extends React.Component {
   static propTypes = {
