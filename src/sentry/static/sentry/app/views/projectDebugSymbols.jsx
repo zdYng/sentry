@@ -296,7 +296,7 @@ const ProjectDebugSymbols = createReactClass({
       return (
         <tr key={key}>
           <td>
-            <code className="small">{dsym.uuid}</code>
+            <code className="small">{dsym.debugId || dsym.uuid}</code>
           </td>
           <td>
             {dsym.symbolType === 'proguard' && dsym.objectName === 'proguard-mapping'
@@ -350,7 +350,7 @@ const ProjectDebugSymbols = createReactClass({
         <table className="table">
           <thead>
             <tr>
-              <th>{t('UUID')}</th>
+              <th>{t('Debug ID')}</th>
               <th>{t('Object')}</th>
               <th>{t('Type')}</th>
               <th>{t('Uploaded')}</th>
@@ -401,7 +401,7 @@ const ProjectDebugSymbols = createReactClass({
             <table className="table">
               <thead>
                 <tr>
-                  <th>{t('UUID')}</th>
+                  <th>{t('Debug ID')}</th>
                   <th>{t('Object')}</th>
                   <th>{t('Type')}</th>
                   <th>{t('Uploaded')}</th>
