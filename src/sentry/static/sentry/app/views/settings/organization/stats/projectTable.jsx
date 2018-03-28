@@ -1,107 +1,97 @@
 import PropTypes from 'prop-types';
 import React from 'react';
+import styled from 'react-emotion';
 import {Link} from 'react-router';
 
 import Count from '../../../../components/count';
 import {t} from '../../../../locale';
 
-let getPercent = (item, total) => {
-  if (total === 0) {
-    return '';
-  }
-  if (item === 0) {
-    return '0%';
-  }
-  return parseInt(item / total * 100, 10) + '%';
-};
+import Panel from '../../components/panel';
+import PanelBody from '../../components/panelBody';
+import PanelHeader from '../../components/panelHeader';
 
-class ProjectTable extends React.PureComponent {
-  static propTypes = {
-    projectMap: PropTypes.object.isRequired,
-    projectTotals: PropTypes.array.isRequired,
-    orgTotal: PropTypes.object.isRequired,
-    organization: PropTypes.object.isRequired,
+const ProjectTable = ({projectMap, projectTotals, orgTotal, organization}) => {
+  const getPercent = (item, total) => {
+    if (total === 0) {
+      return '';
+    }
+    if (item === 0) {
+      return '0%';
+    }
+    return parseInt(item / total * 100, 10) + '%';
   };
 
-  render() {
-    let projectMap = this.props.projectMap;
-    let projectTotals = this.props.projectTotals;
-    let orgTotal = this.props.orgTotal;
-    let org = this.props.organization;
-    let features = new Set(org.features);
+  let features = new Set(organization.features);
 
-    if (!projectTotals) {
-      return <div />;
-    }
-
-    // Sort based on # events received in desc order
-    projectTotals.sort((a, b) => {
-      return b.received - a.received;
-    });
-
-    return (
-      <table className="table m-b-0">
-        <thead>
-          <tr>
-            <th>{t('Project')}</th>
-            <th className="align-right">{t('Accepted')}</th>
-            <th className="align-right">
-              {t('Dropped')}
-              <br />
-              {t('(Rate Limit)')}
-            </th>
-            <th className="align-right">
-              {t('Dropped')}
-              <br />
-              {t('(Filters)')}
-            </th>
-            <th className="align-right">{t('Total')}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {projectTotals.map(item => {
-            let project = projectMap[item.id];
-
-            if (!project) {
-              return null;
-            }
-
-            return (
-              <tr key={item.id}>
-                <td>
-                  <Link to={`/${org.slug}/${project.slug}/`}>
-                    {features.has('new-teams')
-                      ? project.slug
-                      : `${project.team.name} / ${project.name}`}
-                  </Link>
-                </td>
-                <td className="align-right">
-                  <Count value={item.accepted} />
-                  <br />
-                  <small>{getPercent(item.accepted, orgTotal.accepted)}</small>
-                </td>
-                <td className="align-right">
-                  <Count value={item.rejected} />
-                  <br />
-                  <small>{getPercent(item.rejected, orgTotal.rejected)}</small>
-                </td>
-                <td className="align-right">
-                  <Count value={item.blacklisted} />
-                  <br />
-                  <small>{getPercent(item.blacklisted, orgTotal.blacklisted)}</small>
-                </td>
-                <td className="align-right">
-                  <Count value={item.received} />
-                  <br />
-                  <small>{getPercent(item.received, orgTotal.received)}</small>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
-    );
+  if (!projectTotals) {
+    return <div />;
   }
-}
+
+  return (
+    <Panel>
+      <PanelHeader>
+        <ProjectGrid>
+          <div>{t('Project')}</div>
+          <div>{t('Accepted')}</div>
+          <div>{t('Rate Limited')}</div>
+          <div>{t('Filtered')}</div>
+          <div>{t('Total')}</div>
+        </ProjectGrid>
+      </PanelHeader>
+      <PanelBody>
+        {projectTotals.sort((a, b) => b.received - a.received).map((item, index) => {
+          let project = projectMap[item.id];
+
+          if (!project) return null;
+
+          return (
+            <ProjectGrid key={index}>
+              <div>
+                <Link to={`/${organization.slug}/${project.slug}/`}>
+                  {features.has('new-teams')
+                    ? project.slug
+                    : `${project.team.name} / ${project.name}`}
+                </Link>
+              </div>
+              <div>
+                <Count value={item.accepted} />
+                <br />
+                <small>{getPercent(item.accepted, orgTotal.accepted)}</small>
+              </div>
+              <div>
+                <Count value={item.rejected} />
+                <br />
+                <small>{getPercent(item.rejected, orgTotal.rejected)}</small>
+              </div>
+              <div>
+                <Count value={item.blacklisted} />
+                <br />
+                <small>{getPercent(item.blacklisted, orgTotal.blacklisted)}</small>
+              </div>
+              <div>
+                <Count value={item.received} />
+                <br />
+                <small>{getPercent(item.received, orgTotal.received)}</small>
+              </div>
+            </ProjectGrid>
+          );
+        })}
+      </PanelBody>
+    </Panel>
+  );
+};
+
+ProjectTable.propTypes = {
+  projectMap: PropTypes.object.isRequired,
+  projectTotals: PropTypes.array.isRequired,
+  orgTotal: PropTypes.object.isRequired,
+  organization: PropTypes.object.isRequired,
+};
+
+const ProjectGrid = styled('div')`
+  display: grid;
+  grid-template-columns: auto 100px 120px 100px 60px;
+  width: 100%;
+`;
 
 export default ProjectTable;
