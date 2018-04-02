@@ -19,12 +19,22 @@ class Newsletter(Service):
     def get_subscriptions(self, user):
         return None
 
-    def update_subscription(self, user, **kwargs):
+    def update_subscription(self, user, list_id=None, subscribed=True, create=None,
+                            verified=None, subscribed_date=None, unsubscribed_date=None, **kwargs):
         return None
 
-    def create_or_update_subscription(self, user, **kwargs):
-        kwargs['create'] = True
-        return self.update_subscription(user, **kwargs)
+    def create_or_update_subscription(self, user, list_id=None, subscribed=True, verified=None,
+                                      subscribed_date=None, unsubscribed_date=None, **kwargs):
+        return self.update_subscription(
+            user=user,
+            list_id=list_id,
+            subscribed=subscribed,
+            verified=verified,
+            subscribed_date=subscribed_date,
+            unsubscribed_date=unsubscribed_date,
+            create=True,
+            **kwargs
+        )
 
     def optout_email(self, email, property):
         raise NotImplementedError
