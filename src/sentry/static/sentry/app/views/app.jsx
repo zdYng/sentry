@@ -6,21 +6,22 @@ import Cookies from 'js-cookie';
 import PropTypes from 'prop-types';
 import React from 'react';
 import createReactClass from 'create-react-class';
+import idx from 'idx';
 
 import {t} from '../locale';
 import AlertActions from '../actions/alertActions';
 import Alerts from '../components/alerts';
 import ApiMixin from '../mixins/apiMixin';
+import AssistantHelper from '../components/assistant/helper';
 import ConfigStore from '../stores/configStore';
+import ErrorBoundary from '../components/errorBoundary';
+import GlobalModal from '../components/globalModal';
 import Indicators from '../components/indicators';
 import InstallWizard from './installWizard';
-import AssistantHelper from '../components/assistant/helper';
 import LoadingIndicator from '../components/loadingIndicator';
 import OrganizationsLoader from '../components/organizations/organizationsLoader';
 import OrganizationsStore from '../stores/organizationsStore';
-import GlobalModal from '../components/globalModal';
 import theme from '../utils/theme';
-import ErrorBoundary from '../components/errorBoundary';
 
 if (window.globalStaticUrl) __webpack_public_path__ = window.globalStaticUrl; // defined in layout.html
 
@@ -106,20 +107,16 @@ const App = createReactClass({
       // Ignore error unless it is a 401
       if (!jqXHR || jqXHR.status !== 401 || pageAllowsAnon) return;
 
-      let response = jqXHR.responseJSON;
+      let code = idx(jqXHR, _ => _.responseJSON.detail.code);
+      let extra = idx(jqXHR, _ => _.responseJSON.detail.extra);
 
       // 401s can also mean sudo is required or it's a request that is allowed to fail
       // Ignore if these are the cases
-      if (
-        response &&
-        response.detail &&
-        (response.detail.code === 'sudo-required' || response.detail.code === 'ignore')
-      )
-        return;
+      if (code === 'sudo-required' || code === 'ignore') return;
 
       // If user must login via SSO, redirect to org login page
-      if (response && response.detail && response.detail.code === 'sso-required') {
-        window.location.assign(response.detail.extra.loginUrl);
+      if (code === 'sso-required') {
+        window.location.assign(extra.loginUrl);
         return;
       }
 
