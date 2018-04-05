@@ -3,12 +3,9 @@ import React from 'react';
 import styled from 'react-emotion';
 import {Link} from 'react-router';
 
+import {ProjectTableLayout, ProjectTableDataElement} from './projectTableLayout';
 import Count from '../../../../components/count';
-import {t} from '../../../../locale';
-
-import Panel from '../../components/panel';
-import PanelBody from '../../components/panelBody';
-import PanelHeader from '../../components/panelHeader';
+import space from '../../../../styles/space';
 
 const ProjectTable = ({projectMap, projectTotals, orgTotal, organization}) => {
   const getPercent = (item, total) => {
@@ -27,58 +24,39 @@ const ProjectTable = ({projectMap, projectTotals, orgTotal, organization}) => {
     return <div />;
   }
 
-  return (
-    <Panel>
-      <PanelHeader>
-        <ProjectGrid>
-          <div>{t('Project')}</div>
-          <div>{t('Accepted')}</div>
-          <div>{t('Rate Limited')}</div>
-          <div>{t('Filtered')}</div>
-          <div>{t('Total')}</div>
-        </ProjectGrid>
-      </PanelHeader>
-      <PanelBody>
-        {projectTotals.sort((a, b) => b.received - a.received).map((item, index) => {
-          let project = projectMap[item.id];
+  return projectTotals.sort((a, b) => b.received - a.received).map((item, index) => {
+    let project = projectMap[item.id];
 
-          if (!project) return null;
+    if (!project) return null;
 
-          return (
-            <ProjectGrid key={index}>
-              <div>
-                <Link to={`/${organization.slug}/${project.slug}/`}>
-                  {features.has('new-teams')
-                    ? project.slug
-                    : `${project.team.name} / ${project.name}`}
-                </Link>
-              </div>
-              <div>
-                <Count value={item.accepted} />
-                <br />
-                <small>{getPercent(item.accepted, orgTotal.accepted)}</small>
-              </div>
-              <div>
-                <Count value={item.rejected} />
-                <br />
-                <small>{getPercent(item.rejected, orgTotal.rejected)}</small>
-              </div>
-              <div>
-                <Count value={item.blacklisted} />
-                <br />
-                <small>{getPercent(item.blacklisted, orgTotal.blacklisted)}</small>
-              </div>
-              <div>
-                <Count value={item.received} />
-                <br />
-                <small>{getPercent(item.received, orgTotal.received)}</small>
-              </div>
-            </ProjectGrid>
-          );
-        })}
-      </PanelBody>
-    </Panel>
-  );
+    return (
+      <StyledProjectTableLayout key={index}>
+        <StyledProjectTitle>
+          <Link to={`/${organization.slug}/${project.slug}/`}>
+            {features.has('new-teams')
+              ? project.slug
+              : `${project.team.name} / ${project.name}`}
+          </Link>
+        </StyledProjectTitle>
+        <ProjectTableDataElement>
+          <Count value={item.accepted} />
+          <Percentage>{getPercent(item.accepted, orgTotal.accepted)}</Percentage>
+        </ProjectTableDataElement>
+        <ProjectTableDataElement>
+          <Count value={item.rejected} />
+          <Percentage>{getPercent(item.rejected, orgTotal.rejected)}</Percentage>
+        </ProjectTableDataElement>
+        <ProjectTableDataElement>
+          <Count value={item.blacklisted} />
+          <Percentage>{getPercent(item.blacklisted, orgTotal.blacklisted)}</Percentage>
+        </ProjectTableDataElement>
+        <ProjectTableDataElement>
+          <Count value={item.received} />
+          <Percentage>{getPercent(item.received, orgTotal.received)}</Percentage>
+        </ProjectTableDataElement>
+      </StyledProjectTableLayout>
+    );
+  });
 };
 
 ProjectTable.propTypes = {
@@ -88,10 +66,26 @@ ProjectTable.propTypes = {
   organization: PropTypes.object.isRequired,
 };
 
-const ProjectGrid = styled('div')`
-  display: grid;
-  grid-template-columns: auto 100px 120px 100px 60px;
-  width: 100%;
+const StyledProjectTitle = styled(ProjectTableDataElement)`
+  display: flex;
+  align-items: center;
+  text-align: left;
+`;
+
+const StyledProjectTableLayout = styled(ProjectTableLayout)`
+  padding: ${space(2)};
+
+  &:not(:last-child) {
+    border-bottom: 1px solid ${p => p.theme.borderLight};
+  }
+`;
+
+const Percentage = styled(
+  ({children, ...props}) => children !== '' && <div {...props}>{children}</div>
+)`
+  margin-top: ${space(0.25)};
+  color: ${p => p.theme.gray2};
+  font-size: 12px;
 `;
 
 export default ProjectTable;

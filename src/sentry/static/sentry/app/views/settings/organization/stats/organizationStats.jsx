@@ -10,6 +10,7 @@ import SettingsPageHeader from '../../components/settingsPageHeader';
 import TextBlock from '../../components/text/textBlock';
 
 import ProjectTable from './projectTable';
+import {ProjectTableLayout, ProjectTableDataElement} from './projectTableLayout';
 import {t} from '../../../../locale';
 import {intcomma} from '../../../../utils';
 
@@ -56,6 +57,7 @@ class OrganizationStats extends React.Component {
       projectsLoading,
       projectTotals,
       projectMap,
+      projectsError,
       pageLinks,
       organization,
     } = this.props;
@@ -102,14 +104,31 @@ class OrganizationStats extends React.Component {
           )}
         </div>
 
-        <ProjectTable
-          projectTotals={projectTotals}
-          orgTotal={orgTotal}
-          organization={organization}
-          projectMap={projectMap}
-          isLoading={statsLoading || projectsLoading}
-        />
-
+        <Panel>
+          <PanelHeader>
+            <ProjectTableLayout>
+              <div>{t('Project')}</div>
+              <ProjectTableDataElement>{t('Accepted')}</ProjectTableDataElement>
+              <ProjectTableDataElement>{t('Rate Limited')}</ProjectTableDataElement>
+              <ProjectTableDataElement>{t('Filtered')}</ProjectTableDataElement>
+              <ProjectTableDataElement>{t('Total')}</ProjectTableDataElement>
+            </ProjectTableLayout>
+          </PanelHeader>
+          <PanelBody>
+            {statsLoading || projectsLoading ? (
+              <LoadingIndicator />
+            ) : projectsError ? (
+              <LoadingError onRetry={this.fetchData} />
+            ) : (
+              <ProjectTable
+                projectTotals={projectTotals}
+                orgTotal={orgTotal}
+                organization={organization}
+                projectMap={projectMap}
+              />
+            )}
+          </PanelBody>
+        </Panel>
         {pageLinks && <Pagination pageLinks={pageLinks} {...this.props} />}
       </div>
     );
