@@ -9,7 +9,7 @@ import ConfigStore from '../../../../stores/configStore';
 import IndicatorStore from '../../../../stores/indicatorStore';
 import OrganizationAccessRequests from './organizationAccessRequests';
 import OrganizationMemberRow from './organizationMemberRow';
-import OrganizationSettingsView from '../../../organizationSettingsView';
+import AsyncView from '../../../asyncView';
 import Pagination from '../../../../components/pagination';
 import {Panel, PanelBody, PanelHeader} from '../../../../components/panels';
 import SentryTypes from '../../../../proptypes';
@@ -17,7 +17,7 @@ import SettingsPageHeader from '../../components/settingsPageHeader';
 import recreateRoute from '../../../../utils/recreateRoute';
 import GuideAnchor from '../../../../components/assistant/guideAnchor';
 
-class OrganizationMembersView extends OrganizationSettingsView {
+class OrganizationMembersView extends AsyncView {
   static propTypes = {
     routes: PropTypes.array,
   };
