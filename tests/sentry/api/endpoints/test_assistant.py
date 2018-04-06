@@ -27,9 +27,13 @@ class AssistantActivity(APITestCase):
         assert resp.status_code == 400
 
     def test_activity(self):
+        GUIDES_WITH_SEEN = GUIDES.copy()
+        for g in GUIDES_WITH_SEEN:
+            GUIDES_WITH_SEEN[g]['seen'] = False
+
         resp = self.client.get(self.path)
         assert resp.status_code == 200
-        assert resp.data == GUIDES
+        assert resp.data == GUIDES_WITH_SEEN
 
         # Dismiss the guide and make sure it is not returned again.
         resp = self.client.put(self.path, {
@@ -38,8 +42,9 @@ class AssistantActivity(APITestCase):
         })
         assert resp.status_code == 201
         resp = self.client.get(self.path)
+        GUIDES_WITH_SEEN['releases']['seen'] = True
         assert resp.status_code == 200
-        assert resp.data == {k: v for k, v in GUIDES.items() if v['id'] != 2}
+        assert resp.data == GUIDES_WITH_SEEN
 
     def test_validate_guides(self):
         # Steps in different guides should not have the same target.
