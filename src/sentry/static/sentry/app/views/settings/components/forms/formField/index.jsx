@@ -259,6 +259,7 @@ class FormField extends React.Component {
 
   render() {
     let {
+      className,
       name,
       showReturnButton,
       hideErrorMessage,
@@ -269,7 +270,7 @@ class FormField extends React.Component {
     let model = this.getModel();
 
     return (
-      <Field id={id} name={name} {...props}>
+      <Field id={id} name={name} className={className} {...props}>
         {({alignRight, inline, disabled, disabledReason}) => (
           <FieldControl
             disabled={disabled}
@@ -298,7 +299,8 @@ class FormField extends React.Component {
                   <this.props.children
                     innerRef={this.handleInputMount}
                     {...{
-                      ...this.props,
+                      ...props,
+                      name,
                       id,
                       onKeyDown: this.handleKeyDown,
                       onChange: this.handleChange,
