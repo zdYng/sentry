@@ -17,15 +17,20 @@ exports[`OrganizationDetails render() deletion in progress should render a delet
         class="box box-modal"
       >
         <div
-          class="box-header"
+          class="box-header css-1gd5aa3-Header css-9sv2740"
         >
-          <a
-            href="/"
+          <div
+            class="css-1w4ex5v-LogoLink css-9sv2741"
           >
-            <span
-              class="icon-sentry-logo"
-            />
-          </a>
+            <a
+              href="/"
+            >
+              <span
+                class="icon-sentry-logo"
+              />
+            </a>
+          </div>
+          <div />
         </div>
         <div
           class="box-content with-padding"
@@ -67,15 +72,20 @@ exports[`OrganizationDetails render() pending deletion should render a restorati
         class="box box-modal"
       >
         <div
-          class="box-header"
+          class="box-header css-1gd5aa3-Header css-9sv2740"
         >
-          <a
-            href="/"
+          <div
+            class="css-1w4ex5v-LogoLink css-9sv2741"
           >
-            <span
-              class="icon-sentry-logo"
-            />
-          </a>
+            <a
+              href="/"
+            >
+              <span
+                class="icon-sentry-logo"
+              />
+            </a>
+          </div>
+          <div />
         </div>
         <div
           class="box-content with-padding"
@@ -142,15 +152,20 @@ exports[`OrganizationDetails render() pending deletion should render a restorati
         class="box box-modal"
       >
         <div
-          class="box-header"
+          class="box-header css-1gd5aa3-Header css-9sv2740"
         >
-          <a
-            href="/"
+          <div
+            class="css-1w4ex5v-LogoLink css-9sv2741"
           >
-            <span
-              class="icon-sentry-logo"
-            />
-          </a>
+            <a
+              href="/"
+            >
+              <span
+                class="icon-sentry-logo"
+              />
+            </a>
+          </div>
+          <div />
         </div>
         <div
           class="box-content with-padding"

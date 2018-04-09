@@ -46,39 +46,40 @@ import OrganizationContext from './views/organizationContext';
 import OrganizationCreate from './views/organizationCreate';
 import OrganizationDashboard from './views/organizationDashboard';
 import OrganizationDetails from './views/organizationDetails';
+import OrganizationEmpty from './views/organizationEmpty';
+import OrganizationGeneralSettingsView from './views/settings/organization/general/organizationGeneralSettingsView';
 import OrganizationHomeContainer from './components/organizations/homeContainer';
 import OrganizationMemberDetail from './views/settings/organization/members/organizationMemberDetail';
 import OrganizationMembersView from './views/settings/organization/members/organizationMembersView';
 import OrganizationProjectsView from './views/settings/organization/projects/organizationProjectsView';
 import OrganizationRateLimits from './views/organizationRateLimits';
 import OrganizationRepositoriesView from './views/organizationRepositoriesView';
-import OrganizationGeneralSettingsView from './views/settings/organization/general/organizationGeneralSettingsView';
 import OrganizationStats from './views/organizationStats';
 import OrganizationTeams from './views/organizationTeams';
 import OrganizationTeamsProjectsView from './views/organizationTeamsProjects';
-import ProjectAlertRules from './views/projectAlertRules';
 import ProjectAlertRuleDetails from './views/projectAlertRuleDetails';
+import ProjectAlertRules from './views/projectAlertRules';
 import ProjectAlertSettings from './views/projectAlertSettings';
-import ProjectEnvironments from './views/projectEnvironments';
-import ProjectTags from './views/projectTags';
 import ProjectChooser from './views/projectChooser';
 import ProjectDashboard from './views/projectDashboard';
 import ProjectDataForwarding from './views/projectDataForwarding';
 import ProjectDebugSymbols from './views/projectDebugSymbols';
 import ProjectDetails from './views/projectDetails';
 import ProjectDocsContext from './views/projectInstall/docsContext';
+import ProjectEnvironments from './views/projectEnvironments';
 import ProjectEvents from './views/projectEvents';
 import ProjectGeneralSettings from './views/projectGeneralSettings';
 import ProjectGettingStarted from './views/projectInstall/gettingStarted';
 import ProjectInstallOverview from './views/projectInstall/overview';
 import ProjectInstallPlatform from './views/projectInstall/platform';
 import ProjectIssueTracking from './views/projectIssueTracking';
+import ProjectPluginDetails from './views/projectPluginDetails';
+import ProjectPlugins from './views/projectPlugins';
 import ProjectReleases from './views/projectReleases';
 import ProjectSavedSearches from './views/projectSavedSearches';
 import ProjectSettings from './views/projectSettings';
+import ProjectTags from './views/projectTags';
 import ProjectUserReports from './views/projectUserReports';
-import ProjectPlugins from './views/projectPlugins';
-import ProjectPluginDetails from './views/projectPluginDetails';
 import ReleaseAllEvents from './views/releaseAllEvents';
 import ReleaseArtifacts from './views/releaseArtifacts';
 import ReleaseCommits from './views/releases/releaseCommits';
@@ -93,8 +94,8 @@ import Stream from './views/stream';
 import TeamCreate from './views/teamCreate';
 import TeamDetails from './views/teamDetails';
 import TeamMembers from './views/teamMembers';
-import TeamSettings from './views/teamSettings';
 import TeamProjects from './views/settings/team/teamProjects';
+import TeamSettings from './views/teamSettings';
 import errorHandler from './utils/errorHandler';
 
 function appendTrailingSlash(nextState, replace) {
@@ -589,6 +590,7 @@ function routes() {
       <Redirect from="/share/group/:shareId/" to="/share/issue/:shareId/" />
       <Route path="/share/issue/:shareId/" component={errorHandler(SharedGroupDetails)} />
 
+      <Route path="/no-organizations/" component={errorHandler(OrganizationEmpty)} />
       <Route path="/organizations/new/" component={errorHandler(OrganizationCreate)} />
 
       <Route path="/onboarding/:orgId/" component={errorHandler(OrganizationContext)}>
