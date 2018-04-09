@@ -1,13 +1,12 @@
 import React from 'react';
 
-import AsyncView from './asyncView';
-import ConfigStore from '../stores/configStore';
-import NarrowLayout from '../components/narrowLayout';
-import {ApiForm, BooleanField, TextField} from '../components/forms';
-import {t, tct} from '../locale';
+import {t} from '../../locale';
+import AsyncView from '../asyncView';
+import NarrowLayout from '../../components/narrowLayout';
+import OrganizationCreateForm from './organizationCreateForm';
 
 export default class OrganizationCreate extends AsyncView {
-  onSubmitSuccess = data => {
+  handleSubmitSuccess = data => {
     // redirect to project creation *(BYPASS REACT ROUTER AND FORCE PAGE REFRESH TO GRAB CSRF TOKEN)*
     // browserHistory.pushState(null, `/organizations/${data.slug}/projects/new/`);
     window.location.href = `/organizations/${data.slug}/projects/new/`;
@@ -18,9 +17,6 @@ export default class OrganizationCreate extends AsyncView {
   }
 
   renderBody() {
-    let termsUrl = ConfigStore.get('termsUrl');
-    let privacyUrl = ConfigStore.get('privacyUrl');
-
     return (
       <NarrowLayout>
         <h3>{t('Create a New Organization')}</h3>
@@ -31,37 +27,7 @@ export default class OrganizationCreate extends AsyncView {
           )}
         </p>
 
-        <ApiForm
-          initialData={{defaultTeam: true}}
-          submitLabel={t('Create Organization')}
-          apiEndpoint="/organizations/"
-          apiMethod="POST"
-          onSubmitSuccess={this.onSubmitSuccess}
-          requireChanges={true}
-        >
-          <TextField
-            name="name"
-            label={t('Organization Name')}
-            placeholder={t('e.g. My Company')}
-            required={true}
-          />
-
-          {termsUrl &&
-            privacyUrl && (
-              <BooleanField
-                name="agreeTerms"
-                label={tct(
-                  'I agree to the [termsLink:Terms of Service] and the [privacyLink:Privacy Policy]',
-                  {
-                    termsLink: <a href={termsUrl} />,
-                    privacyLink: <a href={privacyUrl} />,
-                  }
-                )}
-                placeholder={t('e.g. My Company')}
-                required={true}
-              />
-            )}
-        </ApiForm>
+        <OrganizationCreateForm onSubmitSuccess={this.handleSubmitSuccess} />
       </NarrowLayout>
     );
   }
