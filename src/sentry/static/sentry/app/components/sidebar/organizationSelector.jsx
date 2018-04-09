@@ -10,14 +10,6 @@ import Link from '../link';
 import OrganizationsStore from '../../stores/organizationsStore';
 import SidebarPanel from '../sidebarPanel';
 
-let RouterOrBrowserLink = ({isRouter, path, ...props}) =>
-  isRouter ? <Link to={path} {...props} /> : <a href={path} {...props} />;
-
-RouterOrBrowserLink.propTypes = {
-  isRouter: PropTypes.bool,
-  path: PropTypes.string.isRequired,
-};
-
 const OrganizationSelector = createReactClass({
   displayName: 'OrganizationSelector',
 
@@ -97,18 +89,16 @@ const OrganizationSelector = createReactClass({
                       )}
                       <h5>{this.getLinkNode(org, org.name)}</h5>
                       <p>
-                        <RouterOrBrowserLink
-                          isRouter={hasNewSettings}
-                          path={`${settingsPrefix}/${org.slug}/`}
+                        <Link
+                          to={`${settingsPrefix}/${org.slug}/${hasNewSettings
+                            ? ''
+                            : 'settings/'}`}
                         >
                           <span className="icon-settings" /> {t('Settings')}
-                        </RouterOrBrowserLink>
-                        <RouterOrBrowserLink
-                          isRouter={hasNewSettings}
-                          path={`${settingsPrefix}/${org.slug}/members/`}
-                        >
+                        </Link>
+                        <Link to={`${settingsPrefix}/${org.slug}/members/`}>
                           <span className="icon-users" /> {t('Members')}
-                        </RouterOrBrowserLink>
+                        </Link>
                       </p>
                     </li>
                   );
